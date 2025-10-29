@@ -176,7 +176,7 @@
             padding: 14px 18px;
             border-radius: 10px;
             margin-top: 20px;
-            font-size: 14px;
+            font-size: 15px;
             color: #555;
             text-align: center;
             font-weight: 500;
@@ -185,7 +185,7 @@
         .next-preview strong {
             color: #667eea;
             font-weight: 700;
-            font-size: 11px;
+            font-size: 12px;
             letter-spacing: 0.5px;
         }
 
@@ -903,7 +903,7 @@
         .modal-close-btn {
             position: absolute;
             top: -10px;
-            right: -10px;
+            left: -10px;
             background: white;
             border: 2px solid #e0e0e0;
             font-size: 16px;
@@ -1845,7 +1845,7 @@ Can you create a YAML file for a workout with 3 sets of 20 push-ups, 3 sets of 1
             // Next preview
             if (currentIndex < exercises.length - 1) {
                 const next = exercises[currentIndex + 1];
-                nextPreview.innerHTML = `<strong>UP NEXT:</strong> ${next.name} <span style="color: #999; font-size: 12px;">• ${next.section}</span>`;
+                nextPreview.innerHTML = `<strong>UP NEXT:</strong> ${next.name} <span style="color: #999; font-size: 13px;">• ${next.section}</span>`;
                 nextPreview.classList.remove('hidden');
             } else {
                 nextPreview.classList.add('hidden');
@@ -1902,16 +1902,16 @@ Can you create a YAML file for a workout with 3 sets of 20 push-ups, 3 sets of 1
 
                     const remaining = duration - elapsedSeconds;
 
-                    // Play countdown sounds at 3, 2, 1
+                    // Play C Mixolydian countdown sounds at 3, 2, 1 (descending, leading to completion arpeggio)
                     if (remaining === 3) {
-                        playBeep(600, 0.15);
+                        playBeep(932.33, 0.15);  // Bb5
                     } else if (remaining === 2) {
-                        playBeep(700, 0.15);
+                        playBeep(659.25, 0.15);  // E5
                     } else if (remaining === 1) {
-                        playBeep(800, 0.15);
+                        playBeep(523.25, 0.15);  // C5
                     } else if (remaining === 0) {
                         stopTimer();
-                        playCompletionSound();
+                        playCompletionSound();  // C6, Bb5, E5, C5 Mixolydian descending arpeggio
                     }
                 }
             }, 1000);
@@ -2057,8 +2057,8 @@ Can you create a YAML file for a workout with 3 sets of 20 push-ups, 3 sets of 1
 
             try {
                 const ctx = getAudioContext();
-                // C major chord - E, G, C, E arpeggio (first inversion, resonant)
-                const notes = [329.63, 392.00, 523.25, 659.25]; // E4, G4, C5, E5
+                // C major arpeggio: C5, E5, G5, C6 (bright, energizing "get ready to GO!")
+                const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
                 const startTime = ctx.currentTime;
 
                 notes.forEach((freq, index) => {
@@ -2086,15 +2086,15 @@ Can you create a YAML file for a workout with 3 sets of 20 push-ups, 3 sets of 1
             }
         }
 
-        // Play a nice completion sound (ascending chime)
+        // Play a nice completion sound (Mixolydian mode - "well done" with satisfying resolution)
         function playCompletionSound() {
             if (!soundEnabled) return;
 
             try {
                 const ctx = getAudioContext();
 
-                // Play three ascending notes
-                const notes = [523.25, 659.25, 783.99]; // C, E, G
+                // C Mixolydian descending arpeggio: C6, Bb5, E5, C5 (winding down, bluesy "bringing it home" feel)
+                const notes = [1046.50, 932.33, 659.25, 523.25]; // C6, Bb5, E5, C5
                 const startTime = ctx.currentTime;
 
                 notes.forEach((freq, index) => {
@@ -2107,8 +2107,8 @@ Can you create a YAML file for a workout with 3 sets of 20 push-ups, 3 sets of 1
                     oscillator.frequency.value = freq;
                     oscillator.type = 'sine';
 
-                    const noteStart = startTime + (index * 0.15);
-                    const noteDuration = 0.4;
+                    const noteStart = startTime + (index * 0.06); // Quick arpeggio (same speed as startup)
+                    const noteDuration = 0.3;
 
                     gainNode.gain.setValueAtTime(0, noteStart);
                     gainNode.gain.linearRampToValueAtTime(0.3, noteStart + 0.01);
