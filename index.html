@@ -1120,6 +1120,16 @@
         .info-actions .btn {
             min-width: 100px;
         }
+
+        .info-message li code {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            padding: 2px 6px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
+            font-size: 0.9em;
+            color: #2d3748;
+        }
     </style>
 </head>
 <body>
@@ -1779,7 +1789,7 @@ Please output only the YAML file in a code block.`;
                 <ol>
                     <li>Click "Copy" below to copy a ready-to-use prompt</li>
                     <li>Paste it into ChatGPT, Claude, or any AI assistant</li>
-                    <li>Replace the bracketed text with your own workout description</li>
+                    <li>Replace <code>[describe your workout here]</code> with your own workout description</li>
                     <li>Copy the YAML file it generates and paste it back here in this editor!</li>
                 </ol>
                 <p><strong>Copy this prompt:</strong></p>
