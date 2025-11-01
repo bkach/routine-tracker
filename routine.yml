@@ -17,37 +17,35 @@ subtitle: "25-30 minutes • 4-5× per week"
 #
 # - section: The section this exercise belongs to (groups exercises in timeline)
 # - name: The display name of the exercise
-# - type: Either "reps" or "timed"
+# - type: Either "reps", "timed", or "rest"
 #     * "reps": Rep-based exercises (no timer, you complete manually)
 #     * "timed": Timed exercises (shows a countdown timer)
+#     * "rest": Rest periods (green timer, no countdown, auto-advances if enabled)
 # - sets: Number of sets
-#     * For "timed" exercises: Each set gets its own card with a timer
+#     * For "timed" and "rest" exercises: Each set gets its own card with a timer
 #     * For "reps" exercises: All sets shown on a single card
 # - reps: For "reps" exercises, the rep count (e.g., "10 reps", "10 each leg")
-# - duration: For "timed" exercises, the duration in seconds
-# - instructions: How to perform the exercise
+# - duration: For "timed" and "rest" exercises, the duration in seconds
+# - instructions: How to perform the exercise (optional for "rest" - defaults to break message)
 # - feel: Optional - what you should feel during the exercise (appears as a yellow tip)
 
 exercises:
   # ==========================================
   # WARM-UP
   # ==========================================
-
-  # Example of a rep-based exercise (no timer)
   - section: "Warm-Up"
     name: "Ankle Circles"
     type: "reps"
     sets: 2
     reps: "10 each direction, both feet"
     instructions: "Sit or stand, lift one foot, slowly draw big circles with your toes. Repeat on the other foot."
-    feel: null  # Use 'null' if no feel cue needed
+    feel: null
 
-  # Example of a timed exercise (shows countdown timer)
   - section: "Warm-Up"
     name: "Toe Walks"
     type: "timed"
     sets: 1
-    duration: 30  # Duration in seconds
+    duration: 30
     instructions: "Walk on your tip-toes. Feel your calves working."
     feel: null
 
@@ -75,10 +73,17 @@ exercises:
     instructions: "Rise up on both toes, hold 1 second, lower slowly."
     feel: null
 
+  # Add rest after warm-up section
+  - section: "Warm-Up"
+    name: "Rest"
+    type: "rest"
+    duration: 25
+    sets: 1
+    instructions: "Take a brief rest before the next exercise."
+
   # ==========================================
   # SLANT-BOARD MOBILITY
   # ==========================================
-
   - section: "Slant-Board Mobility"
     name: "Straight-Leg Calf Stretch"
     type: "timed"
@@ -86,6 +91,13 @@ exercises:
     duration: 40
     instructions: "Stand with toes up the slope, knees straight, heels down. Lean slightly forward until you feel a stretch high in your calves."
     feel: "Pull in upper calf, no heel pain."
+
+  - section: "Slant-Board Mobility"
+    name: "Rest"
+    type: "rest"
+    duration: 25
+    sets: 1
+    instructions: "Take a brief rest before the next exercise."
 
   - section: "Slant-Board Mobility"
     name: "Bent-Knee Calf Stretch"
@@ -96,12 +108,26 @@ exercises:
     feel: "Deeper in lower calf/Achilles."
 
   - section: "Slant-Board Mobility"
+    name: "Rest"
+    type: "rest"
+    duration: 25
+    sets: 1
+    instructions: "Take a brief rest before the next exercise."
+
+  - section: "Slant-Board Mobility"
     name: "Jefferson Curl on Slant Board"
     type: "reps"
     sets: 2
     reps: "8-10 reps"
     instructions: "Stand on slant board facing downhill, feet hip-width apart, knees soft. Slowly roll down vertebra by vertebra, reaching toward toes. Keep heels down for maximum calf stretch. Roll back up slowly, stacking spine vertebra by vertebra."
     feel: "Deep stretch through calves, hamstrings, and entire posterior chain."
+
+  - section: "Slant-Board Mobility"
+    name: "Rest"
+    type: "rest"
+    duration: 25
+    sets: 1
+    instructions: "Take a brief rest before the next exercise."
 
   - section: "Slant-Board Mobility"
     name: "Eccentric Heel Lowers"
@@ -112,6 +138,13 @@ exercises:
     feel: "Tension in Achilles, slow and smooth."
 
   - section: "Slant-Board Mobility"
+    name: "Rest"
+    type: "rest"
+    duration: 25
+    sets: 1
+    instructions: "Take a brief rest before the next exercise."
+
+  - section: "Slant-Board Mobility"
     name: "Half-Kneeling Ankle Glide"
     type: "reps"
     sets: 4
@@ -119,10 +152,17 @@ exercises:
     instructions: "One knee down, other foot flat in front. Keeping front heel down, gently drive knee forward past toes, return. 10 slow reps. Complete set on one side, then switch."
     feel: "Stretch at front of ankle."
 
+  # Add rest after section
+  - section: "Slant-Board Mobility"
+    name: "Rest"
+    type: "rest"
+    duration: 25
+    sets: 1
+    instructions: "Take a brief rest before the next exercise."
+
   # ==========================================
   # BALANCE & STABILITY
   # ==========================================
-
   - section: "Balance & Stability"
     name: "Two-Foot Balance Hold"
     type: "timed"
@@ -130,6 +170,13 @@ exercises:
     duration: 45
     instructions: "Stand centered on wobble board, knees soft. Keep board edges from touching the floor. Use wall or chair for support if needed."
     feel: "Small ankle adjustments, steady breathing."
+
+  - section: "Balance & Stability"
+    name: "Rest"
+    type: "rest"
+    duration: 25
+    sets: 1
+    instructions: "Take a brief rest before the next exercise."
 
   - section: "Balance & Stability"
     name: "Single-Foot Balance (Left)"
@@ -148,6 +195,13 @@ exercises:
     feel: "Ankle and foot working to keep you upright."
 
   - section: "Balance & Stability"
+    name: "Rest"
+    type: "rest"
+    duration: 25
+    sets: 1
+    instructions: "Take a brief rest before the next exercise."
+
+  - section: "Balance & Stability"
     name: "Controlled Tilts - Forward/Back"
     type: "reps"
     sets: 1
@@ -164,6 +218,13 @@ exercises:
     feel: "Smooth control through full ankle motion."
 
   - section: "Balance & Stability"
+    name: "Rest"
+    type: "rest"
+    duration: 25
+    sets: 1
+    instructions: "Take a brief rest before the next exercise."
+
+  - section: "Balance & Stability"
     name: "Mini Squats on Board"
     type: "reps"
     sets: 2
@@ -171,10 +232,17 @@ exercises:
     instructions: "Two feet on board, lower 15-20° then stand. Keep control—edges shouldn't slap floor. (Optional advanced)"
     feel: null
 
+  # Add rest after section
+  - section: "Balance & Stability"
+    name: "Rest"
+    type: "rest"
+    duration: 25
+    sets: 1
+    instructions: "Take a brief rest before the next exercise."
+
   # ==========================================
   # FRONT-OF-ANKLE MOBILITY
   # ==========================================
-
   - section: "Front-of-Ankle Mobility"
     name: "Top-of-Foot Stretch"
     type: "timed"
@@ -184,12 +252,26 @@ exercises:
     feel: null
 
   - section: "Front-of-Ankle Mobility"
+    name: "Rest"
+    type: "rest"
+    duration: 25
+    sets: 1
+    instructions: "Take a brief rest before the next exercise."
+
+  - section: "Front-of-Ankle Mobility"
     name: "Toe-Tuck Stretch"
     type: "timed"
     sets: 2
     duration: 30
     instructions: "From kneeling, tuck toes under (balls of feet on floor). Sit gently toward heels."
     feel: "Stretch under toes and sole—great for plantar fascia."
+
+  - section: "Front-of-Ankle Mobility"
+    name: "Rest"
+    type: "rest"
+    duration: 25
+    sets: 1
+    instructions: "Take a brief rest before the next exercise."
 
   - section: "Front-of-Ankle Mobility"
     name: "Ankle Alphabet (Left)"
@@ -207,10 +289,16 @@ exercises:
     instructions: "Sit down, lift one foot, 'draw' the alphabet in the air with your toes."
     feel: "Front of ankle loosening."
 
+  - section: "Front-of-Ankle Mobility"
+    name: "Rest"
+    type: "rest"
+    duration: 25
+    sets: 1
+    instructions: "Take a brief rest before the next exercise."
+
   # ==========================================
   # FOAM ROLL
   # ==========================================
-
   - section: "Foam Roll"
     name: "Foam Roll Calves (Left)"
     type: "timed"

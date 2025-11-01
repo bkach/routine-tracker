@@ -87,6 +87,10 @@
             margin-bottom: 20px;
         }
 
+        .exercise-card.rest {
+            background: #f0fdf4;
+        }
+
         .section-badge {
             display: none;
         }
@@ -116,6 +120,11 @@
             flex-direction: column;
             justify-content: center;
             box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .timer-display.rest {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            box-shadow: 0 4px 20px rgba(72, 187, 120, 0.3);
         }
 
         .timer-label {
@@ -620,6 +629,16 @@
         .timeline-exercise.completed {
             opacity: 0.6;
             text-decoration: line-through;
+        }
+
+        .timeline-exercise.rest {
+            background: #f0fdf4;
+            border-left-color: #48bb78;
+        }
+
+        .timeline-exercise.rest.current {
+            background: #d1fae5;
+            border-left-color: #38a169;
         }
 
         .timeline-exercise-meta {
@@ -1132,6 +1151,15 @@
                         </span>
                     </label>
                 </div>
+                <div class="setting-item">
+                    <label class="setting-label">
+                        <input type="checkbox" id="autoAdvanceEnabledCheckbox" class="setting-checkbox">
+                        <span class="setting-text">
+                            <strong>Auto-advance timed exercises</strong>
+                            <small>Automatically move to next exercise when timer completes</small>
+                        </span>
+                    </label>
+                </div>
                 <div class="settings-tip">
                     <strong>💡 Tip: Keyboard shortcuts</strong>
                     <div class="settings-tip-content">
@@ -1300,10 +1328,10 @@
                 // Clear existing exercises
                 exercises = [];
 
-                // Expand exercises into individual sets (only for timed exercises)
+                // Expand exercises into individual sets (only for timed and rest exercises)
                 routine.forEach(ex => {
-                    if (ex.type === 'timed') {
-                        // Timed exercises get separate cards for each set
+                    if (ex.type === 'timed' || ex.type === 'rest') {
+                        // Timed and rest exercises get separate cards for each set
                         for (let set = 1; set <= ex.sets; set++) {
                             exercises.push({
                                 ...ex,
@@ -1474,6 +1502,7 @@
         let currentDuration = 0;
         let soundEnabled = localStorage.getItem('soundEnabled') === 'true';
         let countdownEnabled = localStorage.getItem('countdownEnabled') === 'true';
+        let autoAdvanceEnabled = localStorage.getItem('autoAdvanceEnabled') === 'true';
         let sessionStartTime = Date.now();
 
         // Elements
@@ -1513,6 +1542,7 @@
         const settingsCloseBtn = document.getElementById('settingsCloseBtn');
         const soundEnabledCheckbox = document.getElementById('soundEnabledCheckbox');
         const countdownEnabledCheckbox = document.getElementById('countdownEnabledCheckbox');
+        const autoAdvanceEnabledCheckbox = document.getElementById('autoAdvanceEnabledCheckbox');
 
         // Audio context for generating sounds
         let audioContext = null;
@@ -1544,14 +1574,16 @@
 
                 sectionExercises.forEach(ex => {
                     let meta = '';
-                    if (ex.type === 'timed') {
+                    if (ex.type === 'timed' || ex.type === 'rest') {
                         meta = `${ex.duration}s${ex.sets > 1 ? ` • Set ${ex.currentSet}/${ex.sets}` : ''}`;
                     } else {
                         meta = ex.displayReps || ex.reps;
                     }
 
+                    const restClass = ex.type === 'rest' ? ' rest' : '';
+
                     html += `
-                        <div class="timeline-exercise" data-index="${ex.index}">
+                        <div class="timeline-exercise${restClass}" data-index="${ex.index}">
                             <div>${ex.name}</div>
                             <div class="timeline-exercise-meta">${meta}</div>
                         </div>
@@ -1658,6 +1690,8 @@
                 currentIndex = 0;
                 buildTimeline();
                 renderExercise();
+                // Update editor textarea to show the reset configuration
+                editorTextarea.value = currentYamlText;
                 showToast('↺ Configuration reset to original');
             }
         }
@@ -1742,6 +1776,7 @@ Can you create a YAML file for a workout with 3 sets of 20 push-ups, 3 sets of 1
             });
             soundEnabledCheckbox.addEventListener('change', updateSettings);
             countdownEnabledCheckbox.addEventListener('change', updateSettings);
+            autoAdvanceEnabledCheckbox.addEventListener('change', updateSettings);
 
             // Confirmation modal close button
             document.getElementById('confirmCloseBtnX').addEventListener('click', () => {
@@ -1791,6 +1826,7 @@ Can you create a YAML file for a workout with 3 sets of 20 push-ups, 3 sets of 1
 
         function renderExercise() {
             const ex = exercises[currentIndex];
+            const isRest = ex.type === 'rest';
 
             // Update progress
             progressText.textContent = `Exercise ${currentIndex + 1} of ${exercises.length}`;
@@ -1800,26 +1836,46 @@ Can you create a YAML file for a workout with 3 sets of 20 push-ups, 3 sets of 1
             // Update exercise info
             sectionBadge.textContent = ex.section.toUpperCase();
             exerciseTitle.textContent = ex.name;
-            // Only show set info for timed exercises
+            // Only show set info for timed exercises (not rest)
             setInfo.textContent = (ex.type === 'timed' && ex.sets > 1) ? `Set ${ex.currentSet} of ${ex.sets}` : '';
 
-            // Instructions
-            instructionsText.innerHTML = `<p>${ex.instructions}</p>`;
-
-            if (ex.feel) {
-                feelCue.textContent = `👉 Feel: ${ex.feel}`;
-                feelCue.classList.remove('hidden');
+            // Apply rest styling to exercise card
+            const exerciseCard = document.querySelector('.exercise-card');
+            if (isRest) {
+                exerciseCard.classList.add('rest');
             } else {
+                exerciseCard.classList.remove('rest');
+            }
+
+            // Instructions (simplified for rest)
+            if (isRest) {
+                instructionsText.innerHTML = `<p>Take a break and prepare for the next exercise.</p>`;
                 feelCue.classList.add('hidden');
+            } else {
+                instructionsText.innerHTML = `<p>${ex.instructions}</p>`;
+                if (ex.feel) {
+                    feelCue.textContent = `👉 Feel: ${ex.feel}`;
+                    feelCue.classList.remove('hidden');
+                } else {
+                    feelCue.classList.add('hidden');
+                }
             }
 
             // Timer or reps
-            if (ex.type === 'timed') {
+            if (ex.type === 'timed' || isRest) {
                 timerContainer.classList.remove('hidden');
                 repsContainer.classList.add('hidden');
                 pauseBtn.style.display = 'block';
                 resetBtn.style.display = 'block';
-                timerLabel.textContent = ex.duration >= 60 ? 'Hold Time' : 'Time';
+
+                // Apply rest styling to timer and set label
+                if (isRest) {
+                    timerContainer.classList.add('rest');
+                    timerLabel.textContent = 'Rest';
+                } else {
+                    timerContainer.classList.remove('rest');
+                    timerLabel.textContent = ex.duration >= 60 ? 'Hold Time' : 'Time';
+                }
 
                 // Initialize timer but don't start it
                 currentDuration = ex.duration;
@@ -1830,6 +1886,7 @@ Can you create a YAML file for a workout with 3 sets of 20 push-ups, 3 sets of 1
                 pauseBtn.textContent = '▶';
             } else {
                 timerContainer.classList.add('hidden');
+                timerContainer.classList.remove('rest');
                 repsContainer.classList.remove('hidden');
                 pauseBtn.style.display = 'none';
                 resetBtn.style.display = 'none';
@@ -1852,10 +1909,14 @@ Can you create a YAML file for a workout with 3 sets of 20 push-ups, 3 sets of 1
             }
         }
 
-        function startTimer(duration) {
+        function startTimer(duration, skipCountdown = false) {
             stopTimer();
 
-            if (countdownEnabled) {
+            const ex = exercises[currentIndex];
+            const isRest = ex.type === 'rest';
+
+            // Skip countdown for rest exercises or when explicitly requested
+            if (countdownEnabled && !isRest && !skipCountdown) {
                 // Start with 3-2-1 countdown
                 startCountdown(duration);
             } else {
@@ -1873,20 +1934,22 @@ Can you create a YAML file for a workout with 3 sets of 20 push-ups, 3 sets of 1
             playBeep(523.25, 0.15);  // C5
 
             timerInterval = setInterval(() => {
-                countdownSeconds--;
+                if (!isPaused) {
+                    countdownSeconds--;
 
-                if (countdownSeconds === 2) {
-                    timerDisplay.textContent = '2';
-                    playBeep(659.25, 0.15);  // E5
-                } else if (countdownSeconds === 1) {
-                    timerDisplay.textContent = '1';
-                    playBeep(783.99, 0.15);  // G5
-                } else if (countdownSeconds === 0) {
-                    // Play quick arpeggio for "GO"
-                    playArpeggio();
-                    // Countdown complete, start main timer
-                    stopTimer();
-                    startMainTimer(duration);
+                    if (countdownSeconds === 2) {
+                        timerDisplay.textContent = '2';
+                        playBeep(659.25, 0.15);  // E5
+                    } else if (countdownSeconds === 1) {
+                        timerDisplay.textContent = '1';
+                        playBeep(783.99, 0.15);  // G5
+                    } else if (countdownSeconds === 0) {
+                        // Play quick arpeggio for "GO"
+                        playArpeggio();
+                        // Countdown complete, start main timer
+                        stopTimer();
+                        startMainTimer(duration);
+                    }
                 }
             }, 1000);
         }
@@ -1912,6 +1975,15 @@ Can you create a YAML file for a workout with 3 sets of 20 push-ups, 3 sets of 1
                     } else if (remaining === 0) {
                         stopTimer();
                         playCompletionSound();  // C6, Bb5, E5, C5 Mixolydian descending arpeggio
+
+                        // Auto-advance if enabled and current exercise is timed or rest
+                        const ex = exercises[currentIndex];
+                        if (autoAdvanceEnabled && (ex.type === 'timed' || ex.type === 'rest')) {
+                            // Wait 1 second before advancing
+                            setTimeout(() => {
+                                nextExercise();
+                            }, 1000);
+                        }
                     }
                 }
             }, 1000);
@@ -1942,8 +2014,8 @@ Can you create a YAML file for a workout with 3 sets of 20 push-ups, 3 sets of 1
                 timerStarted = true;
                 startTimer(currentDuration);
                 pauseBtn.textContent = '⏸';
-            } else if (timerInterval) {
-                // Timer is running, pause it
+            } else {
+                // Toggle pause state
                 isPaused = !isPaused;
                 pauseBtn.textContent = isPaused ? '▶' : '⏸';
             }
@@ -1975,6 +2047,15 @@ Can you create a YAML file for a workout with 3 sets of 20 push-ups, 3 sets of 1
             } else {
                 renderExercise();
                 updateTimelineHighlight();
+
+                // Auto-start timer if auto-advance is enabled and next exercise is timed/rest
+                const nextEx = exercises[currentIndex];
+                if (autoAdvanceEnabled && (nextEx.type === 'timed' || nextEx.type === 'rest')) {
+                    timerStarted = true;
+                    // Include countdown during auto-advance for consistency
+                    startTimer(nextEx.duration, false);
+                    pauseBtn.textContent = '⏸';
+                }
             }
         }
 
@@ -2012,6 +2093,7 @@ Can you create a YAML file for a workout with 3 sets of 20 push-ups, 3 sets of 1
             // Set checkbox states from current settings
             soundEnabledCheckbox.checked = soundEnabled;
             countdownEnabledCheckbox.checked = countdownEnabled;
+            autoAdvanceEnabledCheckbox.checked = autoAdvanceEnabled;
             settingsModal.classList.add('open');
         }
 
@@ -2023,8 +2105,10 @@ Can you create a YAML file for a workout with 3 sets of 20 push-ups, 3 sets of 1
             // Save settings when checkboxes change
             soundEnabled = soundEnabledCheckbox.checked;
             countdownEnabled = countdownEnabledCheckbox.checked;
+            autoAdvanceEnabled = autoAdvanceEnabledCheckbox.checked;
             localStorage.setItem('soundEnabled', soundEnabled);
             localStorage.setItem('countdownEnabled', countdownEnabled);
+            localStorage.setItem('autoAdvanceEnabled', autoAdvanceEnabled);
         }
 
         // Play a simple beep at a given frequency
