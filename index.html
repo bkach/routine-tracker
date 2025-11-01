@@ -632,13 +632,38 @@
         }
 
         .timeline-exercise.rest {
-            background: #f0fdf4;
-            border-left-color: #48bb78;
+            background: none;
+            padding: 5px 15px;
+            border-left: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: #999;
+            font-style: italic;
+        }
+
+        .timeline-exercise.rest::before {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(to right, #48bb78, transparent);
+        }
+
+        .timeline-exercise.rest:hover {
+            background: none;
+            transform: translateX(0);
+            color: #48bb78;
         }
 
         .timeline-exercise.rest.current {
-            background: #d1fae5;
-            border-left-color: #38a169;
+            background: none;
+            color: #48bb78;
+            font-weight: 500;
+        }
+
+        .timeline-exercise.rest.current::before {
+            background: linear-gradient(to right, #38a169, transparent);
         }
 
         .timeline-exercise-meta {
@@ -1600,7 +1625,6 @@
                 el.addEventListener('click', () => {
                     const index = parseInt(el.getAttribute('data-index'));
                     jumpToExercise(index);
-                    closeTimeline();
                 });
             });
 
@@ -1697,11 +1721,50 @@
         }
 
         function copyRoutinePrompt() {
-            const promptWithYaml = `Here's a YAML file format for a workout routine:
+            const promptWithYaml = `Can you create a YAML file for a workout routine with [describe your workout here - e.g., "3 sets of 20 push-ups, 3 sets of 15 squats with 24kg kettlebell, 1 minute plank, and 1 minute side plank on each side"]?
 
-${currentYamlText}
+The YAML should have this exact structure:
 
-Can you create a YAML file for a workout with 3 sets of 20 push-ups, 3 sets of 15 squats with 24kg kettlebell, 1 minute plank, and 1 minute side plank on each side?`;
+\`\`\`yaml
+title: "Workout Name"
+subtitle: "Duration • Frequency"
+exercises:
+  - section: "Warm-Up"
+    name: "Exercise Name"
+    type: "reps"
+    sets: 2
+    reps: "10 reps"
+    instructions: "How to perform the exercise"
+    feel: null
+
+  - section: "Warm-Up"
+    name: "Rest"
+    type: "rest"
+    duration: 30
+    sets: 1
+
+  - section: "Main Workout"
+    name: "Timed Exercise"
+    type: "timed"
+    sets: 3
+    duration: 45
+    instructions: "Hold this position"
+    feel: "Core engagement"
+\`\`\`
+
+Critical rules:
+- title and subtitle are NOT list items (no dash before them)
+- Each exercise under exercises: IS a list item (dash before section:)
+- Type must be exactly "reps", "timed", or "rest" (in quotes)
+- For "reps" exercises: include sets, reps, instructions, feel (optional)
+- For "timed" exercises: include sets, duration (seconds), instructions, feel (optional)
+- For "rest" exercises: ONLY include type: "rest", duration (seconds), sets: 1, and optionally name: "Rest"
+  * Rest exercises are used BETWEEN other exercises as recovery periods
+  * Do NOT include reps, instructions, or feel for rest exercises
+- Each timed/rest exercise with sets > 1 will create multiple cards (one per set)
+- Each reps exercise shows all sets on one card
+
+Please output only the YAML file in a code block.`;
 
             navigator.clipboard.writeText(promptWithYaml);
             const btn = document.getElementById('routinePromptCopyBtn');
@@ -1712,21 +1775,22 @@ Can you create a YAML file for a workout with 3 sets of 20 push-ups, 3 sets of 1
 
         function showRoutineInfo() {
             const messageHtml = `
-                <p>Feel free to edit this file as you see fit, but the best way to create your own routine is much simpler:</p>
+                <p>The easiest way to create your own routine:</p>
                 <ol>
-                    <li>Click "Copy" below to copy a ready-to-use prompt that includes this YAML file</li>
+                    <li>Click "Copy" below to copy a ready-to-use prompt</li>
                     <li>Paste it into ChatGPT, Claude, or any AI assistant</li>
-                    <li>Modify the workout description to what you want</li>
+                    <li>Replace the bracketed text with your own workout description</li>
                     <li>Copy the YAML file it generates and paste it back here in this editor!</li>
                 </ol>
-                <p><strong>Copy this prompt (includes the full YAML file):</strong></p>
+                <p><strong>Copy this prompt:</strong></p>
                 <div class="info-code-block">
                     <button class="info-code-copy-btn" id="routinePromptCopyBtn">Copy</button>
-                    <code>Here's a YAML file format for a workout routine:
+                    <code>Can you create a YAML file for a workout routine with [describe your workout here]?
 
-[Full YAML file included when you copy]
+The YAML should have this structure:
+[Full specification included when you copy]
 
-Can you create a YAML file for a workout with 3 sets of 20 push-ups, 3 sets of 15 squats with 24kg kettlebell, 1 minute plank, and 1 minute side plank on each side?</code>
+Please output only the YAML file in a code block.</code>
                 </div>
                 <p>That's it! The AI handles all the formatting for you.</p>
             `;
@@ -1788,18 +1852,23 @@ Can you create a YAML file for a workout with 3 sets of 20 push-ups, 3 sets of 1
                 // Disable all keyboard shortcuts when editor is open (except Escape)
                 const editorOpen = editorModal.classList.contains('open');
 
-                // Escape to close modals
+                // Escape to close modals (check highest z-index first)
                 if (e.code === 'Escape') {
+                    const infoModal = document.getElementById('infoModal');
                     const confirmModal = document.getElementById('confirmModal');
-                    if (confirmModal.classList.contains('show')) {
+
+                    if (infoModal.classList.contains('show')) {
+                        // Close info modal first (highest z-index)
+                        document.getElementById('infoOkBtn').click();
+                    } else if (confirmModal.classList.contains('show')) {
                         // Trigger cancel on confirmation modal
                         document.getElementById('confirmCancelBtn').click();
-                    } else if (timelinePanel.classList.contains('open')) {
-                        closeTimeline();
-                    } else if (editorModal.classList.contains('open')) {
-                        closeEditor();
                     } else if (settingsModal.classList.contains('open')) {
                         closeSettings();
+                    } else if (editorModal.classList.contains('open')) {
+                        closeEditor();
+                    } else if (timelinePanel.classList.contains('open')) {
+                        closeTimeline();
                     }
                     return;
                 }
@@ -1808,7 +1877,8 @@ Can you create a YAML file for a workout with 3 sets of 20 push-ups, 3 sets of 1
                 if (editorOpen) return;
 
                 // Spacebar to start/pause timer
-                if (e.code === 'Space' && exercises[currentIndex].type === 'timed') {
+                const currentEx = exercises[currentIndex];
+                if (e.code === 'Space' && (currentEx.type === 'timed' || currentEx.type === 'rest')) {
                     e.preventDefault(); // Prevent page scroll
                     togglePause();
                 }
