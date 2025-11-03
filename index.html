@@ -1432,7 +1432,32 @@
                 return true;
             } catch (error) {
                 console.error('Error loading routine configuration:', error);
-                alert('Failed to load routine configuration: ' + error.message);
+
+                // Store the YAML text that failed to parse so it can be edited
+                if (!currentYamlText && yamlText) {
+                    currentYamlText = yamlText;
+                }
+
+                // Determine the error message based on the error type
+                let errorMessage = '⚠️ Configuration Error: ';
+                if (error.name === 'YAMLException') {
+                    errorMessage += 'Invalid YAML syntax. Please check your configuration.';
+                } else if (error.message.includes('exercises')) {
+                    errorMessage += 'Missing or invalid exercises field.';
+                } else if (error.message.includes('title')) {
+                    errorMessage += 'Missing or invalid title field.';
+                } else {
+                    errorMessage += error.message;
+                }
+
+                // Show toast with error
+                showToast(errorMessage, 5000);
+
+                // Open editor so user can fix the issue
+                setTimeout(() => {
+                    openEditor();
+                }, 500);
+
                 return false;
             }
         }
@@ -1862,13 +1887,7 @@ Please output only the YAML file in a code block.</code>
 
         // Initialize
         async function init() {
-            // Load configuration first
-            const loaded = await loadConfig();
-            if (!loaded) return;
-
-            buildTimeline();
-            renderExercise();
-
+            // Set up event listeners first (needed even if config fails)
             nextBtn.addEventListener('click', nextExercise);
             prevBtn.addEventListener('click', previousExercise);
             pauseBtn.addEventListener('click', togglePause);
@@ -1903,6 +1922,13 @@ Please output only the YAML file in a code block.</code>
             document.getElementById('confirmCloseBtnX').addEventListener('click', () => {
                 document.getElementById('confirmCancelBtn').click();
             });
+
+            // Load configuration
+            const loaded = await loadConfig();
+            if (!loaded) return;
+
+            buildTimeline();
+            renderExercise();
 
             // Keyboard shortcuts
             document.addEventListener('keydown', (e) => {
