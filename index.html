@@ -1363,23 +1363,67 @@
                 // Clear existing exercises
                 exercises = [];
 
-                // Expand exercises into individual sets (only for timed and rest exercises)
+                // Expand exercises into individual sets
                 routine.forEach(ex => {
-                    if (ex.type === 'timed' || ex.type === 'rest') {
-                        // Timed and rest exercises get separate cards for each set
+                    const shouldExpandSets = ex.type === 'timed' || (ex.type === 'reps' && ex.restBetweenSets);
+
+                    if (shouldExpandSets) {
+                        // Expand into separate cards for each set
                         for (let set = 1; set <= ex.sets; set++) {
                             exercises.push({
                                 ...ex,
                                 currentSet: set
                             });
+
+                            // Add rest between sets (but not after the last set)
+                            if (ex.restBetweenSets && set < ex.sets) {
+                                exercises.push({
+                                    type: 'rest',
+                                    name: 'Rest',
+                                    duration: ex.restBetweenSets,
+                                    section: ex.section,
+                                    sets: 1,
+                                    currentSet: 1,
+                                    instructions: `Rest before Set ${set + 1}`,
+                                    isInjectedRest: true // Mark as auto-generated
+                                });
+                            }
+                        }
+
+                        // Add rest after completing all sets
+                        if (ex.restAfterExercise) {
+                            exercises.push({
+                                type: 'rest',
+                                name: 'Rest',
+                                duration: ex.restAfterExercise,
+                                section: ex.section,
+                                sets: 1,
+                                currentSet: 1,
+                                instructions: `Recovery time`,
+                                isInjectedRest: true
+                            });
                         }
                     } else {
-                        // Rep exercises get a single card with set info in description
+                        // Rep exercises without restBetweenSets get a single card
                         exercises.push({
                             ...ex,
                             currentSet: 1,
                             displayReps: ex.sets > 1 ? `${ex.sets} sets of ${ex.reps}` : ex.reps
                         });
+
+                        // Still add restAfterExercise if defined
+                        if (ex.restAfterExercise) {
+                            exercises.push({
+                                type: 'rest',
+                                name: 'Rest',
+                                duration: ex.restAfterExercise,
+                                section: ex.section,
+                                sets: 1,
+                                currentSet: 1,
+                                instructions: `Recovery time`,
+                                isInjectedRest: true
+                            });
+                        }
                     }
                 });
 
@@ -1746,12 +1790,8 @@ exercises:
     reps: "10 reps"
     instructions: "How to perform the exercise"
     feel: null
-
-  - section: "Warm-Up"
-    name: "Rest"
-    type: "rest"
-    duration: 30
-    sets: 1
+    restBetweenSets: 30  # Optional - rest between each set
+    restAfterExercise: 60  # Optional - rest after all sets
 
   - section: "Main Workout"
     name: "Timed Exercise"
@@ -1760,19 +1800,24 @@ exercises:
     duration: 45
     instructions: "Hold this position"
     feel: "Core engagement"
+    restBetweenSets: 20  # Optional - rest between sets
+    restAfterExercise: 90  # Optional - rest after exercise
 \`\`\`
 
 Critical rules:
 - title and subtitle are NOT list items (no dash before them)
 - Each exercise under exercises: IS a list item (dash before section:)
-- Type must be exactly "reps", "timed", or "rest" (in quotes)
+- Type must be exactly "reps" or "timed" (in quotes)
 - For "reps" exercises: include sets, reps, instructions, feel (optional)
 - For "timed" exercises: include sets, duration (seconds), instructions, feel (optional)
-- For "rest" exercises: ONLY include type: "rest", duration (seconds), sets: 1, and optionally name: "Rest"
-  * Rest exercises are used BETWEEN other exercises as recovery periods
-  * Do NOT include reps, instructions, or feel for rest exercises
-- Each timed/rest exercise with sets > 1 will create multiple cards (one per set)
-- Each reps exercise shows all sets on one card
+- restBetweenSets (optional): Duration in seconds for rest between each set
+  * Automatically injects rest periods between sets
+  * For reps exercises: causes expansion to separate cards (one per set)
+- restAfterExercise (optional): Duration in seconds for rest after completing all sets
+  * Adds a recovery period after the exercise is done
+- Each timed exercise with sets > 1 creates multiple cards (one per set)
+- Each reps exercise WITHOUT restBetweenSets shows all sets on one card
+- Each reps exercise WITH restBetweenSets creates multiple cards (one per set) with rests between
 
 Please output only the YAML file in a code block.`;
 
