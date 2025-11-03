@@ -1372,7 +1372,9 @@
                         for (let set = 1; set <= ex.sets; set++) {
                             exercises.push({
                                 ...ex,
-                                currentSet: set
+                                currentSet: set,
+                                // For rep exercises, show just the reps (not "X sets of Y")
+                                displayReps: ex.type === 'reps' ? ex.reps : undefined
                             });
 
                             // Add rest between sets (but not after the last set)
@@ -1961,8 +1963,9 @@ Please output only the YAML file in a code block.</code>
             // Update exercise info
             sectionBadge.textContent = ex.section.toUpperCase();
             exerciseTitle.textContent = ex.name;
-            // Only show set info for timed exercises (not rest)
-            setInfo.textContent = (ex.type === 'timed' && ex.sets > 1) ? `Set ${ex.currentSet} of ${ex.sets}` : '';
+            // Show set info for exercises with multiple sets (timed or reps with restBetweenSets)
+            const shouldShowSetInfo = !isRest && ex.sets > 1 && (ex.type === 'timed' || ex.type === 'reps');
+            setInfo.textContent = shouldShowSetInfo ? `Set ${ex.currentSet} of ${ex.sets}` : '';
 
             // Apply rest styling to exercise card
             const exerciseCard = document.querySelector('.exercise-card');
