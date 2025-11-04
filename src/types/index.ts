@@ -47,6 +47,19 @@ export interface RoutineConfig {
   exercises: Exercise[]
 }
 
+// Routine library types
+export type RoutineId = string
+
+export interface RoutineWithId extends RoutineConfig {
+  id: RoutineId
+  name: string // User-facing name for the routine
+  yaml?: string // Raw YAML string to preserve comments
+}
+
+export interface RoutineLibrary {
+  [id: RoutineId]: RoutineWithId
+}
+
 // Settings
 export interface Settings {
   soundEnabled: boolean
@@ -56,7 +69,11 @@ export interface Settings {
 
 // Store state
 export interface RoutineState {
-  // Configuration
+  // Routine library
+  routineLibrary: RoutineLibrary
+  activeRoutineId: RoutineId | null
+
+  // Configuration (derived from active routine)
   config: RoutineConfig | null
   exercises: ExpandedExercise[]
   originalYaml: string
@@ -101,7 +118,14 @@ export interface RoutineState {
 
 // Actions
 export interface RoutineActions {
-  // Configuration
+  // Routine library management
+  loadRoutineLibrary: () => Promise<void>
+  selectRoutine: (id: RoutineId) => Promise<void>
+  createNewRoutine: (name: string, yaml: string) => Promise<RoutineId>
+  deleteRoutine: (id: RoutineId) => void
+  saveRoutineToLibrary: (id: RoutineId, name: string, yaml: string) => Promise<void>
+
+  // Configuration (legacy, now operates on active routine)
   loadConfig: () => Promise<void>
   updateConfig: (yaml: string) => Promise<void>
   resetToDefault: () => Promise<void>

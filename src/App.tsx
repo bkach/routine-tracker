@@ -18,7 +18,7 @@ function App() {
     currentIndex,
     isLoading,
     error,
-    loadConfig,
+    loadRoutineLibrary,
     setTimelineOpen,
     setSettingsOpen,
     confirmModal,
@@ -31,8 +31,8 @@ function App() {
   useKeyboardShortcuts()
 
   useEffect(() => {
-    loadConfig()
-  }, [loadConfig])
+    loadRoutineLibrary()
+  }, [loadRoutineLibrary])
 
   if (isLoading) {
     return (

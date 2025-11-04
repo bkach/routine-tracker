@@ -1,0 +1,81 @@
+title: Morning Mobility
+subtitle: 15 min • Daily
+exercises:
+  - section: Neck & Shoulders
+    name: Neck Rolls
+    type: timed
+    sets: 1
+    duration: 30
+    instructions: Slowly roll your head in circles, 5 times each direction
+    feel: Release tension in neck
+  - section: Neck & Shoulders
+    name: Shoulder Circles
+    type: timed
+    sets: 1
+    duration: 30
+    instructions: Make large circles with your shoulders, forward and backward
+    restAfterExercise: 10
+  - section: Spine Mobility
+    name: Cat-Cow Stretch
+    type: timed
+    sets: 1
+    duration: 45
+    instructions: On hands and knees, alternate between arching and rounding your spine
+    feel: Gentle movement through entire spine
+  - section: Spine Mobility
+    name: Seated Spinal Twist
+    type: timed
+    sets: 2
+    duration: 30
+    instructions: Sit tall and twist to each side, holding for breath
+    restBetweenSets: 15
+    restAfterExercise: 10
+  - section: Hips
+    name: Hip Circles
+    type: timed
+    sets: 1
+    duration: 45
+    instructions: Standing, make large circles with your hips, 10 each direction
+  - section: Hips
+    name: Deep Squat Hold
+    type: timed
+    sets: 1
+    duration: 60
+    instructions: Squat down as deep as comfortable, rest your elbows on knees
+    feel: Opening through hips and ankles
+    restAfterExercise: 15
+  - section: Legs
+    name: Standing Leg Swings
+    type: timed
+    sets: 2
+    duration: 30
+    instructions: Hold wall for balance, swing one leg forward and back
+    restBetweenSets: 10
+  - section: Legs
+    name: Ankle Circles
+    type: timed
+    sets: 2
+    duration: 20
+    instructions: Lift one foot and make circles with your ankle, 10 each direction
+    restBetweenSets: 10
+    restAfterExercise: 15
+  - section: Full Body
+    name: Standing Side Bend
+    type: timed
+    sets: 2
+    duration: 30
+    instructions: Reach overhead and bend to each side
+    restBetweenSets: 10
+  - section: Full Body
+    name: Standing Forward Fold
+    type: timed
+    sets: 1
+    duration: 45
+    instructions: Hang forward from hips, let arms dangle, gentle sway
+    feel: Release through back of legs and spine
+  - section: Full Body
+    name: Arm Circles
+    type: timed
+    sets: 1
+    duration: 30
+    instructions: Large circles with both arms, forward then backward

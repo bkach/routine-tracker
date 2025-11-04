@@ -115,7 +115,7 @@ Please output only the YAML file in a code block.`
 
   const [editedYaml, setEditedYaml] = useState(currentYaml)
 
-  // Update editedYaml when modal opens or currentYaml changes
+  // Update editedYaml when modal opens
   useEffect(() => {
     if (editorOpen) {
       setEditedYaml(currentYaml)
@@ -144,12 +144,12 @@ Please output only the YAML file in a code block.`
 
   const handleReset = () => {
     showConfirm(
-      'Reset Configuration',
-      'Reset to original configuration? Your custom changes will be lost.',
+      'Reset Routine',
+      'Replace this routine with a simple template? Your current exercises will be lost.',
       async () => {
         await resetToDefault()
         // Editor stays open, editedYaml will update via useEffect when currentYaml changes
-        showToast('↺ Configuration reset to original')
+        showToast('↺ Routine reset to template')
       }
     )
   }

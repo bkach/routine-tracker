@@ -1,11 +1,27 @@
 import { create } from 'zustand'
-import type { RoutineStore } from '../types'
-import { loadYamlConfig, saveYamlConfig, clearCustomConfig } from '../utils/yaml'
+import type { RoutineStore, RoutineId } from '../types'
+import {
+  loadYamlConfig,
+  saveYamlConfig,
+  clearCustomConfig,
+  loadRoutineLibrary,
+  saveRoutineLibrary,
+  getActiveRoutineId,
+  setActiveRoutineId,
+  saveRoutineToLibrary as saveRoutineToLib,
+  deleteRoutineFromLibrary,
+  getRoutineById,
+  routineToYaml,
+  generateRoutineId
+} from '../utils/yaml'
 import { expandExercises } from '../utils/exercises'
 import { loadSettings, saveSettings } from '../utils/settings'
+import * as yaml from 'js-yaml'
 
 export const useRoutineStore = create<RoutineStore>((set, get) => ({
   // Initial state
+  routineLibrary: {},
+  activeRoutineId: null,
   config: null,
   exercises: [],
   originalYaml: '',
@@ -35,6 +51,176 @@ export const useRoutineStore = create<RoutineStore>((set, get) => ({
   error: null,
   sessionStartTime: Date.now(),
 
+  // Routine library management actions
+  loadRoutineLibrary: async () => {
+    set({ isLoading: true, error: null })
+
+    try {
+      // Check for URL import first
+      const { checkAndImportFromURL } = await import('../utils/yaml')
+      const importedId = checkAndImportFromURL()
+
+      let library = loadRoutineLibrary()
+      let activeId = getActiveRoutineId()
+
+      // If we imported from URL, switch to it
+      if (importedId) {
+        activeId = importedId
+        setActiveRoutineId(activeId)
+      }
+
+      // If library is empty, load starter templates
+      if (Object.keys(library).length === 0) {
+        // Load all three starter routines
+        const starterRoutines = [
+          { file: 'routine.yml', name: 'Ankle Routine' },
+          { file: 'morning-mobility.yml', name: 'Morning Mobility' },
+          { file: 'strength-workout.yml', name: 'Strength Workout' }
+        ]
+
+        for (const starter of starterRoutines) {
+          try {
+            const response = await fetch(`${import.meta.env.BASE_URL}${starter.file}`)
+            if (response.ok) {
+              const yamlText = await response.text()
+              const config = yaml.load(yamlText) as any
+              const id = generateRoutineId()
+
+              library[id] = {
+                id,
+                name: starter.name,
+                yaml: yamlText, // Preserve raw YAML with comments
+                ...config
+              }
+
+              // Set first routine as active
+              if (!activeId) {
+                activeId = id
+              }
+            }
+          } catch (error) {
+            console.error(`Failed to load ${starter.file}:`, error)
+          }
+        }
+
+        if (Object.keys(library).length > 0) {
+          saveRoutineLibrary(library)
+          if (activeId) {
+            setActiveRoutineId(activeId)
+          }
+        }
+      }
+
+      // Ensure we have an active routine
+      if (!activeId && Object.keys(library).length > 0) {
+        activeId = Object.keys(library)[0]
+        setActiveRoutineId(activeId)
+      }
+
+      set({
+        routineLibrary: library,
+        activeRoutineId: activeId,
+        isLoading: false
+      })
+
+      // Load the active routine
+      if (activeId) {
+        await get().selectRoutine(activeId)
+      }
+    } catch (error) {
+      set({
+        isLoading: false,
+        error: error instanceof Error ? error.message : 'Failed to load routine library'
+      })
+    }
+  },
+
+  selectRoutine: async (id: RoutineId) => {
+    try {
+      const routine = getRoutineById(id)
+      if (!routine) {
+        throw new Error(`Routine not found: ${id}`)
+      }
+
+      const yamlText = routineToYaml(routine)
+      const exercises = expandExercises(routine.exercises)
+
+      set({
+        activeRoutineId: id,
+        config: routine,
+        exercises,
+        originalYaml: yamlText,
+        currentYaml: yamlText,
+        currentIndex: 0,
+        elapsedSeconds: 0,
+        isPaused: true,
+        timerStarted: false,
+        sessionStartTime: Date.now(),
+        error: null
+      })
+
+      setActiveRoutineId(id)
+    } catch (error) {
+      set({
+        error: error instanceof Error ? error.message : 'Failed to select routine'
+      })
+      throw error
+    }
+  },
+
+  createNewRoutine: async (name: string, yamlText: string) => {
+    try {
+      const id = generateRoutineId()
+      saveRoutineToLib(id, name, yamlText)
+
+      // Reload library
+      const library = loadRoutineLibrary()
+      set({ routineLibrary: library })
+
+      return id
+    } catch (error) {
+      set({
+        error: error instanceof Error ? error.message : 'Failed to create routine'
+      })
+      throw error
+    }
+  },
+
+  deleteRoutine: (id: RoutineId) => {
+    try {
+      deleteRoutineFromLibrary(id)
+
+      // Reload library
+      const library = loadRoutineLibrary()
+      set({ routineLibrary: library })
+    } catch (error) {
+      set({
+        error: error instanceof Error ? error.message : 'Failed to delete routine'
+      })
+      throw error
+    }
+  },
+
+  saveRoutineToLibrary: async (id: RoutineId, name: string, yamlText: string) => {
+    try {
+      saveRoutineToLib(id, name, yamlText)
+
+      // Reload library
+      const library = loadRoutineLibrary()
+      set({ routineLibrary: library })
+
+      // If this is the active routine, reload it
+      if (get().activeRoutineId === id) {
+        await get().selectRoutine(id)
+      }
+    } catch (error) {
+      set({
+        error: error instanceof Error ? error.message : 'Failed to save routine'
+      })
+      throw error
+    }
+  },
+
   // Configuration actions
   loadConfig: async () => {
     set({ isLoading: true, error: null })
@@ -63,24 +249,31 @@ export const useRoutineStore = create<RoutineStore>((set, get) => ({
     }
   },
 
-  updateConfig: async (yaml: string) => {
+  updateConfig: async (yamlText: string) => {
     try {
-      const yamlModule = await import('js-yaml')
-      const config = yamlModule.load(yaml)
+      const config = yaml.load(yamlText) as any
 
       if (!config) {
         throw new Error('Invalid YAML configuration')
       }
 
-      const exercises = expandExercises((config as any).exercises)
+      const exercises = expandExercises(config.exercises)
 
-      // Save to localStorage
-      saveYamlConfig(yaml)
+      // If we have an active routine, update it in the library
+      // Use the title from the YAML as the routine name
+      const { activeRoutineId } = get()
+      if (activeRoutineId) {
+        const name = config.title || 'Untitled Routine'
+        await get().saveRoutineToLibrary(activeRoutineId, name, yamlText)
+      } else {
+        // Fallback to legacy behavior
+        saveYamlConfig(yamlText)
+      }
 
       set({
-        config: config as any,
+        config: config,
         exercises,
-        currentYaml: yaml,
+        currentYaml: yamlText,
         currentIndex: 0,
         elapsedSeconds: 0,
         isPaused: true,
@@ -96,8 +289,49 @@ export const useRoutineStore = create<RoutineStore>((set, get) => ({
   },
 
   resetToDefault: async () => {
-    clearCustomConfig()
-    await get().loadConfig()
+    // Reset to a simple template with instructions
+    const simpleTemplate = `title: New Routine
+subtitle: Custom Routine
+exercises:
+  # Timed Exercise Example
+  - section: Warm-up
+    name: Sample Timed Exercise
+    type: timed              # Use "timed" for duration-based exercises
+    sets: 3
+    duration: 30             # Duration in seconds
+    instructions: Replace with your exercise
+    feel: Optional cue about what to focus on
+    restBetweenSets: 15      # Optional: rest between each set (in seconds)
+    restAfterExercise: 60    # Optional: rest after all sets complete
+
+  # Reps Exercise Example
+  - section: Main Work
+    name: Sample Reps Exercise
+    type: reps               # Use "reps" for rep-based exercises
+    sets: 3
+    reps: "10-12 reps"       # Can be "10 reps", "10 each side", etc.
+    instructions: Replace with your exercise
+    restBetweenSets: 45      # Optional: creates separate cards for each set
+    restAfterExercise: 90
+
+  # Quick Reference:
+  # - Each exercise must have: section, name, type, sets
+  # - Timed exercises need: duration (in seconds)
+  # - Reps exercises need: reps (as text, in quotes)
+  # - Optional fields: instructions, feel, restBetweenSets, restAfterExercise
+  # - Delete these example exercises and add your own!
+`
+    try {
+      const { activeRoutineId } = get()
+      if (activeRoutineId) {
+        const routine = getRoutineById(activeRoutineId)
+        if (routine) {
+          await get().saveRoutineToLibrary(activeRoutineId, routine.name, simpleTemplate)
+        }
+      }
+    } catch (error) {
+      console.error('Failed to reset:', error)
+    }
   },
 
   // Navigation actions

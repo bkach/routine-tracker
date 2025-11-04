@@ -1,0 +1,116 @@
+title: Strength Workout
+subtitle: 30 min • 3x per week
+exercises:
+  - section: Warm-up
+    name: Jumping Jacks
+    type: timed
+    sets: 1
+    duration: 60
+    instructions: Full body warm-up, moderate pace
+  - section: Warm-up
+    name: Arm Circles
+    type: timed
+    sets: 1
+    duration: 30
+    instructions: Large circles forward and backward
+    restAfterExercise: 30
+  - section: Push
+    name: Push-ups
+    type: reps
+    sets: 3
+    reps: 12-15 reps
+    instructions: Hands shoulder-width, lower chest to ground, push back up. Modify on knees if needed
+    feel: Chest, shoulders, and triceps working
+    restBetweenSets: 60
+  - section: Push
+    name: Pike Push-ups
+    type: reps
+    sets: 3
+    reps: 8-10 reps
+    instructions: Start in downward dog position, bend elbows to lower head toward ground
+    feel: Shoulders burning
+    restBetweenSets: 60
+    restAfterExercise: 90
+  - section: Pull
+    name: Inverted Rows
+    type: reps
+    sets: 3
+    reps: 10-12 reps
+    instructions: Under a table, pull chest to table edge. Or use resistance band
+    feel: Back and biceps engaged
+    restBetweenSets: 60
+  - section: Pull
+    name: Superman Hold
+    type: timed
+    sets: 3
+    duration: 20
+    instructions: Lying face down, lift arms and legs off ground simultaneously
+    feel: Lower back and glutes working
+    restBetweenSets: 45
+    restAfterExercise: 90
+  - section: Legs
+    name: Squats
+    type: reps
+    sets: 3
+    reps: 15-20 reps
+    instructions: Feet shoulder-width, sit back and down, chest up, knees track over toes
+    feel: Quads and glutes burning
+    restBetweenSets: 60
+  - section: Legs
+    name: Bulgarian Split Squats
+    type: reps
+    sets: 3
+    reps: 10 each leg
+    instructions: Rear foot elevated on chair, lower down on front leg
+    feel: Front leg quad and glute working hard
+    restBetweenSets: 60
+  - section: Legs
+    name: Calf Raises
+    type: reps
+    sets: 3
+    reps: 20 reps
+    instructions: Rise up on toes, hold, lower with control
+    restBetweenSets: 45
+    restAfterExercise: 90
+  - section: Core
+    name: Plank
+    type: timed
+    sets: 3
+    duration: 45
+    instructions: Forearms on ground, body in straight line, squeeze glutes
+    feel: Entire core engaged
+    restBetweenSets: 45
+  - section: Core
+    name: Side Plank
+    type: timed
+    sets: 3
+    duration: 30
+    instructions: On one forearm, stack feet, lift hips. 30s each side
+    restBetweenSets: 30
+  - section: Core
+    name: Bicycle Crunches
+    type: reps
+    sets: 3
+    reps: 20 total
+    instructions: Alternate bringing opposite elbow to knee, extend other leg
+    restBetweenSets: 45
+    restAfterExercise: 60
+  - section: Cool Down
+    name: Child's Pose
+    type: timed
+    sets: 1
+    duration: 45
+    instructions: Sit back on heels, reach arms forward, breathe deeply
+    feel: Gentle stretch through back and shoulders
+  - section: Cool Down
+    name: Quad Stretch
+    type: timed
+    sets: 1
+    duration: 60
+    instructions: Standing, pull one foot to glutes, 30s each leg
+  - section: Cool Down
+    name: Forward Fold
+    type: timed
+    sets: 1
+    duration: 45
+    instructions: Hang forward from hips, let everything relax
