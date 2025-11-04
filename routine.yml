@@ -8,7 +8,7 @@
 title: "Ankle Routine"
 
 # The subtitle shown below the title
-subtitle: "25-30 minutes • 4-5× per week"
+subtitle: "40 minutes • 4-5× per week"
 
 # ==========================================
 # EXERCISES
@@ -40,10 +40,10 @@ exercises:
   # ==========================================
   - section: "Warm-Up"
     name: "Ankle Circles"
-    type: "reps"
+    type: "timed"
     sets: 2
-    reps: "10 each direction, both feet"
-    instructions: "Sit or stand, lift one foot, slowly draw big circles with your toes. Repeat on the other foot."
+    duration: 60
+    instructions: "Sit or stand, lift one foot, slowly draw big circles with your toes. One foot per set."
     feel: null
 
   - section: "Warm-Up"
@@ -72,9 +72,9 @@ exercises:
 
   - section: "Warm-Up"
     name: "Flat-Floor Calf Raises"
-    type: "reps"
-    sets: 2
-    reps: "10 reps"
+    type: "timed"
+    sets: 1
+    duration: 60
     instructions: "Rise up on both toes, hold 1 second, lower slowly."
     feel: null
     restAfterExercise: 25
@@ -104,9 +104,9 @@ exercises:
 
   - section: "Slant-Board Mobility"
     name: "Jefferson Curl on Slant Board"
-    type: "reps"
+    type: "timed"
     sets: 2
-    reps: "8-10 reps"
+    duration: 60
     instructions: "Stand on slant board facing downhill, feet hip-width apart, knees soft. Slowly roll down vertebra by vertebra, reaching toward toes. Keep heels down for maximum calf stretch. Roll back up slowly, stacking spine vertebra by vertebra."
     feel: "Deep stretch through calves, hamstrings, and entire posterior chain."
     restBetweenSets: 25
@@ -114,9 +114,9 @@ exercises:
 
   - section: "Slant-Board Mobility"
     name: "Eccentric Heel Lowers"
-    type: "reps"
+    type: "timed"
     sets: 2
-    reps: "10 reps each leg"
+    duration: 60
     instructions: "Stand near a wall for balance. Rise onto toes with both feet, shift weight to one leg, slowly lower that heel for 4 seconds. Use both feet to come back up. Complete set on one leg, then switch."
     feel: "Tension in Achilles, slow and smooth."
     restBetweenSets: 25
@@ -124,10 +124,10 @@ exercises:
 
   - section: "Slant-Board Mobility"
     name: "Half-Kneeling Ankle Glide"
-    type: "reps"
+    type: "timed"
     sets: 2
-    reps: "10 reps each side"
-    instructions: "One knee down, other foot flat in front. Keeping front heel down, gently drive knee forward past toes, return. 10 slow reps. Complete set on one side, then switch."
+    duration: 60
+    instructions: "One knee down, other foot flat in front. Keeping front heel down, gently drive knee forward past toes, return. Slow reps. One side per set"
     feel: "Stretch at front of ankle."
     restBetweenSets: 25
     restAfterExercise: 25
@@ -167,26 +167,26 @@ exercises:
 
   - section: "Balance & Stability"
     name: "Controlled Tilts - Forward/Back"
-    type: "reps"
+    type: "timed"
     sets: 1
-    reps: "10 tilts"
-    instructions: "Rock board forward and back 10 times. Keep heels and toes gently in contact."
+    duration: 60
+    instructions: "Rock board forward and back. Keep heels and toes gently in contact."
     feel: "Smooth control through full ankle motion."
 
   - section: "Balance & Stability"
     name: "Controlled Tilts - Side to Side"
-    type: "reps"
+    type: "timed"
     sets: 1
-    reps: "10 tilts"
-    instructions: "Rock board side to side 10 times. Keep heels and toes gently in contact."
+    duration: 60
+    instructions: "Rock board side to side. Keep heels and toes gently in contact."
     feel: "Smooth control through full ankle motion."
     restAfterExercise: 25
 
   - section: "Balance & Stability"
     name: "Mini Squats on Board"
-    type: "reps"
+    type: "timed"
     sets: 2
-    reps: "10 reps"
+    duration: 60
     instructions: "Two feet on board, lower 15-20° then stand. Keep control—edges shouldn't slap floor. (Optional advanced)"
     feel: null
     restBetweenSets: 25
