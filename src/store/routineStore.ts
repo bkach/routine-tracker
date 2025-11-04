@@ -3,7 +3,6 @@ import type { RoutineStore, RoutineId } from '../types'
 import {
   loadYamlConfig,
   saveYamlConfig,
-  clearCustomConfig,
   loadRoutineLibrary,
   saveRoutineLibrary,
   getActiveRoutineId,
