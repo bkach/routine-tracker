@@ -529,6 +529,12 @@
             background: rgba(239, 68, 68, 0.1);
         }
 
+        @media (max-width: 768px) {
+            .routine-selector-delete {
+                opacity: 1;
+            }
+        }
+
         .routine-selector-divider {
             height: 1px;
             background: #e2e8f0;
