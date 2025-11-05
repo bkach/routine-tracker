@@ -1,8 +1,6 @@
 import { create } from 'zustand'
 import type { RoutineStore, RoutineId } from '../types'
 import {
-  loadYamlConfig,
-  saveYamlConfig,
   loadRoutineLibrary,
   saveRoutineLibrary,
   getActiveRoutineId,
@@ -55,9 +53,9 @@ export const useRoutineStore = create<RoutineStore>((set, get) => ({
     set({ isLoading: true, error: null })
 
     try {
-      // Check for URL import first
+      // Check for URL import first (now async)
       const { checkAndImportFromURL } = await import('../utils/yaml')
-      const importedId = checkAndImportFromURL()
+      const importedId = await checkAndImportFromURL()
 
       let library = loadRoutineLibrary()
       let activeId = getActiveRoutineId()
@@ -220,31 +218,11 @@ export const useRoutineStore = create<RoutineStore>((set, get) => ({
     }
   },
 
-  // Configuration actions
+  // Configuration actions (reloads active routine)
   loadConfig: async () => {
-    set({ isLoading: true, error: null })
-
-    try {
-      const { yaml: yamlText, config } = await loadYamlConfig()
-      const exercises = expandExercises(config.exercises)
-
-      set({
-        config,
-        exercises,
-        originalYaml: yamlText,
-        currentYaml: yamlText,
-        isLoading: false,
-        currentIndex: 0,
-        elapsedSeconds: 0,
-        isPaused: true,
-        timerStarted: false,
-        sessionStartTime: Date.now(),
-      })
-    } catch (error) {
-      set({
-        isLoading: false,
-        error: error instanceof Error ? error.message : 'Failed to load configuration',
-      })
+    const { activeRoutineId } = get()
+    if (activeRoutineId) {
+      await get().selectRoutine(activeRoutineId)
     }
   },
 
@@ -264,9 +242,6 @@ export const useRoutineStore = create<RoutineStore>((set, get) => ({
       if (activeRoutineId) {
         const name = config.title || 'Untitled Routine'
         await get().saveRoutineToLibrary(activeRoutineId, name, yamlText)
-      } else {
-        // Fallback to legacy behavior
-        saveYamlConfig(yamlText)
       }
 
       set({

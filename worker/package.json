@@ -1,0 +1,17 @@
+{
+  "name": "routine-share-worker",
+  "version": "1.0.0",
+  "description": "Cloudflare Worker for slug-based workout sharing",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20241127.0",
+    "wrangler": "^3.0.0"
+  }
+}

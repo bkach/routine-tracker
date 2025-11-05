@@ -1,86 +1,44 @@
 import * as yaml from 'js-yaml'
-import pako from 'pako'
 import type { RoutineConfig, RoutineLibrary, RoutineId, RoutineWithId } from '../types'
 
 const LIBRARY_KEY = 'routineLibrary'
 const ACTIVE_ROUTINE_KEY = 'activeRoutineId'
 
+// Worker API URL - set via environment variable or use default for local dev
+const WORKER_URL = import.meta.env.VITE_WORKER_URL || 'http://localhost:8787'
+
 /**
- * Load YAML configuration from URL, localStorage, or default file
+ * Save workout YAML to backend and get a slug
  */
-export async function loadYamlConfig(): Promise<{ yaml: string; config: RoutineConfig }> {
-  // Priority 1: Check URL parameter
-  const urlParams = new URLSearchParams(window.location.search)
-  const encodedData = urlParams.get('data')
+export async function saveWorkoutToSlug(yamlText: string): Promise<string> {
+  const response = await fetch(`${WORKER_URL}/new`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'text/plain',
+    },
+    body: yamlText,
+  })
 
-  if (encodedData) {
-    try {
-      const yamlText = decodeYAMLfromURL(encodedData)
-      const config = yaml.load(yamlText) as RoutineConfig
-      // Save URL config to localStorage for persistence across refreshes
-      saveYamlConfig(yamlText)
-      return { yaml: yamlText, config }
-    } catch (error) {
-      console.error('Failed to load from URL:', error)
-    }
-  }
-
-  // Priority 2: Check localStorage
-  const stored = localStorage.getItem('ankleRoutineCustomConfig')
-  if (stored) {
-    try {
-      const config = yaml.load(stored) as RoutineConfig
-      return { yaml: stored, config }
-    } catch (error) {
-      console.error('Failed to load from localStorage:', error)
-    }
-  }
-
-  // Priority 3: Load default from routine.yml
-  // Note: Vite serves files from public/ directory at root
-  const response = await fetch(`${import.meta.env.BASE_URL}routine.yml`)
   if (!response.ok) {
-    throw new Error(`Failed to load routine.yml: ${response.statusText}`)
+    const error = await response.json().catch(() => ({ error: 'Unknown error' }))
+    throw new Error(error.error || 'Failed to save workout')
   }
 
-  const yamlText = await response.text()
-  const config = yaml.load(yamlText) as RoutineConfig
-
-  return { yaml: yamlText, config }
+  const data = await response.json()
+  return data.slug
 }
 
 /**
- * Save YAML configuration to localStorage
+ * Load workout YAML from backend by slug
  */
-export function saveYamlConfig(yamlText: string): void {
-  localStorage.setItem('ankleRoutineCustomConfig', yamlText)
-}
+export async function loadWorkoutFromSlug(slug: string): Promise<string> {
+  const response = await fetch(`${WORKER_URL}/s/${slug}`)
 
-/**
- * Clear custom configuration from localStorage
- */
-export function clearCustomConfig(): void {
-  localStorage.removeItem('ankleRoutineCustomConfig')
-}
+  if (!response.ok) {
+    throw new Error(`Failed to load workout: ${response.statusText}`)
+  }
 
-/**
- * Encode YAML to URL-safe base64 string
- */
-export function encodeYAMLtoURL(yamlText: string): string {
-  const compressed = pako.gzip(yamlText)
-  const base64 = btoa(String.fromCharCode.apply(null, Array.from(compressed)))
-  return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '')
-}
-
-/**
- * Decode URL-safe base64 string to YAML
- */
-export function decodeYAMLfromURL(encoded: string): string {
-  const base64 = encoded.replace(/-/g, '+').replace(/_/g, '/')
-  const padding = '='.repeat((4 - (base64.length % 4)) % 4)
-  const compressed = Uint8Array.from(atob(base64 + padding), c => c.charCodeAt(0))
-  const decompressed = pako.ungzip(compressed, { to: 'string' })
-  return decompressed
+  return await response.text()
 }
 
 /**
@@ -217,16 +175,16 @@ export function routineToYaml(routine: RoutineWithId): string {
 }
 
 /**
- * Check for URL parameter and import routine if present
+ * Check for URL slug parameter and import routine if present
  * Returns the ID of the imported routine if successful
  */
-export function checkAndImportFromURL(): RoutineId | null {
+export async function checkAndImportFromURL(): Promise<RoutineId | null> {
   const urlParams = new URLSearchParams(window.location.search)
-  const encodedData = urlParams.get('data')
+  const slug = urlParams.get('s')
 
-  if (encodedData) {
+  if (slug) {
     try {
-      const yamlText = decodeYAMLfromURL(encodedData)
+      const yamlText = await loadWorkoutFromSlug(slug)
       const config = yaml.load(yamlText) as RoutineConfig
 
       // Generate ID and import into library

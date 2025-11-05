@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useRoutineStore } from '../store/routineStore'
-import { validateYamlConfig, encodeYAMLtoURL } from '../utils/yaml'
+import { validateYamlConfig, saveWorkoutToSlug } from '../utils/yaml'
 
 function showToast(message: string) {
   const toast = document.getElementById('toast')
@@ -19,7 +19,6 @@ export function EditorModal() {
     editorOpen,
     setEditorOpen,
     updateConfig,
-    resetToDefault,
     showConfirm,
     showInfo,
   } = useRoutineStore()
@@ -144,31 +143,62 @@ Please output only the YAML file in a code block.`
 
   const handleReset = () => {
     showConfirm(
-      'Reset Routine',
-      'Replace this routine with a simple template? Your current exercises will be lost.',
-      async () => {
-        await resetToDefault()
-        // Editor stays open, editedYaml will update via useEffect when currentYaml changes
-        showToast('↺ Routine reset to template')
+      'Reset Editor',
+      'Replace the editor content with a simple template?',
+      () => {
+        const simpleTemplate = `title: New Routine
+subtitle: Custom Routine
+exercises:
+  # Timed Exercise Example
+  - section: Warm-up
+    name: Sample Timed Exercise
+    type: timed              # Use "timed" for duration-based exercises
+    sets: 3
+    duration: 30             # Duration in seconds
+    instructions: Replace with your exercise
+    feel: Optional cue about what to focus on
+    restBetweenSets: 15      # Optional: rest between each set (in seconds)
+    restAfterExercise: 60    # Optional: rest after all sets complete
+
+  # Reps Exercise Example
+  - section: Main Work
+    name: Sample Reps Exercise
+    type: reps               # Use "reps" for rep-based exercises
+    sets: 3
+    reps: "10-12 reps"       # Can be "10 reps", "10 each side", etc.
+    instructions: Replace with your exercise
+    restBetweenSets: 45      # Optional: creates separate cards for each set
+    restAfterExercise: 90
+
+  # Quick Reference:
+  # - Each exercise must have: section, name, type, sets
+  # - Timed exercises need: duration (in seconds)
+  # - Reps exercises need: reps (as text, in quotes)
+  # - Optional fields: instructions, feel, restBetweenSets, restAfterExercise
+  # - Delete these example exercises and add your own!
+`
+        setEditedYaml(simpleTemplate)
+        showToast('↺ Editor reset to template')
       }
     )
   }
 
-  const handleShare = () => {
-    const encoded = encodeYAMLtoURL(editedYaml)
-    const url = `${window.location.origin}${window.location.pathname}?data=${encoded}`
+  const handleShare = async () => {
+    try {
+      // Save workout and get slug
+      const slug = await saveWorkoutToSlug(editedYaml)
+      const url = `${window.location.origin}${window.location.pathname}?s=${slug}`
 
-    navigator.clipboard
-      .writeText(url)
-      .then(() => {
-        showInfo(
-          'Share Link Copied',
-          '<p>🔗 Share link copied to clipboard!</p><p>Anyone with this link can load your custom routine.</p>'
-        )
-      })
-      .catch(() => {
-        showInfo('Error', '<p>Failed to copy link to clipboard</p>')
-      })
+      // Copy to clipboard
+      await navigator.clipboard.writeText(url)
+
+      showToast('🔗 Share link copied to clipboard!')
+    } catch (error) {
+      showInfo(
+        'Share Failed',
+        `<p>⚠️ Failed to create share link: ${error instanceof Error ? error.message : 'Unknown error'}</p><p>Make sure the sharing service is available.</p>`
+      )
+    }
   }
 
   const handleBackdropClick = (e: React.MouseEvent) => {

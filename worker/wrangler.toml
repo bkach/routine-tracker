@@ -1,0 +1,9 @@
+name = "routine-share"
+main = "src/index.ts"
+compatibility_date = "2024-01-01"
+
+# KV namespace binding
+[[kv_namespaces]]
+binding = "WORKOUTS"
+id = "3b496c7c13494d69b90b24bd8c0c37b3"
+preview_id = "a90aefb0cd794fa0bb9f53a4666ce3c7"
