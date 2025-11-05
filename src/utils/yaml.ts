@@ -178,10 +178,26 @@ export function routineToYaml(routine: RoutineWithId): string {
 const importedSlugs = new Set<string>()
 
 /**
- * Check for URL slug parameter and import routine if present
- * Returns the ID and name of the imported routine if successful
+ * Find a routine in the library that has identical YAML content
  */
-export async function checkAndImportFromURL(): Promise<{ id: RoutineId; name: string } | null> {
+function findRoutineByYaml(yamlText: string): RoutineWithId | null {
+  const library = loadRoutineLibrary()
+  const normalizedSearch = yamlText.trim()
+
+  for (const routine of Object.values(library)) {
+    if (routine.yaml && routine.yaml.trim() === normalizedSearch) {
+      return routine
+    }
+  }
+
+  return null
+}
+
+/**
+ * Check for URL slug parameter and import routine if present
+ * Returns the ID, name, and whether it was newly added
+ */
+export async function checkAndImportFromURL(): Promise<{ id: RoutineId; name: string; isNew: boolean } | null> {
   const urlParams = new URLSearchParams(window.location.search)
   const slug = urlParams.get('s')
 
@@ -197,17 +213,24 @@ export async function checkAndImportFromURL(): Promise<{ id: RoutineId; name: st
     try {
       const yamlText = await loadWorkoutFromSlug(slug)
       const config = yaml.load(yamlText) as RoutineConfig
-
-      // Generate ID and import into library
-      const id = generateRoutineId()
       const name = config.title || 'Imported Routine'
 
-      saveRoutineToLibrary(id, name, yamlText)
+      // Check if this routine already exists (by YAML content)
+      const existingRoutine = findRoutineByYaml(yamlText)
 
       // Clear URL parameter
       window.history.replaceState({}, '', window.location.pathname)
 
-      return { id, name }
+      if (existingRoutine) {
+        // Routine already exists, just navigate to it
+        return { id: existingRoutine.id, name: existingRoutine.name, isNew: false }
+      }
+
+      // New routine, import it
+      const id = generateRoutineId()
+      saveRoutineToLibrary(id, name, yamlText)
+
+      return { id, name, isNew: true }
     } catch (error) {
       console.error('Failed to import from URL:', error)
       // Remove from Set if import failed so it can be retried

@@ -60,16 +60,18 @@ export const useRoutineStore = create<RoutineStore>((set, get) => ({
       let library = loadRoutineLibrary()
       let activeId = getActiveRoutineId()
 
-      // If we imported from URL, switch to it and show toast
+      // If we imported from URL, switch to it
       if (imported) {
         activeId = imported.id
         setActiveRoutineId(activeId)
 
-        // Show toast notification after a brief delay to ensure DOM is ready
-        setTimeout(async () => {
-          const { showToast } = await import('../utils/toast')
-          showToast(`"${imported.name}" added to your routines`)
-        }, 100)
+        // Only show toast if this was a new import (not a duplicate)
+        if (imported.isNew) {
+          setTimeout(async () => {
+            const { showToast } = await import('../utils/toast')
+            showToast(`"${imported.name}" added to your routines`)
+          }, 100)
+        }
       }
 
       // If library is empty, load starter templates
