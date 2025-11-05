@@ -179,9 +179,26 @@ exercises:
       const slug = await saveWorkoutToSlug(editedYaml)
       const url = `${window.location.origin}${window.location.pathname}?s=${slug}`
 
-      // Copy to clipboard
-      await navigator.clipboard.writeText(url)
+      // Try to use native share sheet on mobile
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title: 'Workout Routine',
+            text: 'Check out this workout routine!',
+            url: url
+          })
+          showToast('🔗 Shared successfully!')
+          return
+        } catch (shareError) {
+          // User cancelled or share failed, fallback to clipboard
+          if ((shareError as Error).name !== 'AbortError') {
+            console.warn('Share failed, falling back to clipboard:', shareError)
+          }
+        }
+      }
 
+      // Fallback: Copy to clipboard
+      await navigator.clipboard.writeText(url)
       showToast('🔗 Share link copied to clipboard!')
     } catch (error) {
       showInfo(
