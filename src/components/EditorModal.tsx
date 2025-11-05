@@ -1,17 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useRoutineStore } from '../store/routineStore'
 import { validateYamlConfig, saveWorkoutToSlug } from '../utils/yaml'
-
-function showToast(message: string) {
-  const toast = document.getElementById('toast')
-  if (toast) {
-    toast.textContent = message
-    toast.classList.add('show')
-    setTimeout(() => {
-      toast.classList.remove('show')
-    }, 3000)
-  }
-}
+import { showToast } from '../utils/toast'
 
 export function EditorModal() {
   const {

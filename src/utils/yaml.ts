@@ -174,15 +174,26 @@ export function routineToYaml(routine: RoutineWithId): string {
   return yaml.dump(config)
 }
 
+// Track imported slugs to prevent duplicate imports in the same session
+const importedSlugs = new Set<string>()
+
 /**
  * Check for URL slug parameter and import routine if present
- * Returns the ID of the imported routine if successful
+ * Returns the ID and name of the imported routine if successful
  */
-export async function checkAndImportFromURL(): Promise<RoutineId | null> {
+export async function checkAndImportFromURL(): Promise<{ id: RoutineId; name: string } | null> {
   const urlParams = new URLSearchParams(window.location.search)
   const slug = urlParams.get('s')
 
   if (slug) {
+    // Check if we've already imported this slug in this session
+    if (importedSlugs.has(slug)) {
+      return null
+    }
+
+    // Mark this slug as being imported immediately to prevent race conditions
+    importedSlugs.add(slug)
+
     try {
       const yamlText = await loadWorkoutFromSlug(slug)
       const config = yaml.load(yamlText) as RoutineConfig
@@ -196,9 +207,11 @@ export async function checkAndImportFromURL(): Promise<RoutineId | null> {
       // Clear URL parameter
       window.history.replaceState({}, '', window.location.pathname)
 
-      return id
+      return { id, name }
     } catch (error) {
       console.error('Failed to import from URL:', error)
+      // Remove from Set if import failed so it can be retried
+      importedSlugs.delete(slug)
     }
   }
 
