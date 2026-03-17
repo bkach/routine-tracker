@@ -57,7 +57,7 @@ export function validateYamlConfig(yamlText: string): { valid: boolean; error?: 
     }
 
     for (const exercise of config.exercises) {
-      const ex = exercise as any
+      const ex = exercise as Partial<RoutineConfig['exercises'][number]>
       if (!ex.name) {
         return { valid: false, error: 'Exercise missing name' }
       }
@@ -119,6 +119,13 @@ export function getActiveRoutineId(): RoutineId | null {
  */
 export function setActiveRoutineId(id: RoutineId): void {
   localStorage.setItem(ACTIVE_ROUTINE_KEY, id)
+}
+
+/**
+ * Clear active routine ID from localStorage
+ */
+export function clearActiveRoutineId(): void {
+  localStorage.removeItem(ACTIVE_ROUTINE_KEY)
 }
 
 /**

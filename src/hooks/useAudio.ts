@@ -1,5 +1,6 @@
 import { useCallback, useRef } from 'react'
 import { useRoutineStore } from '../store/routineStore'
+import { END_COUNTDOWN_FREQUENCIES } from '../utils/sound'
 
 /**
  * Custom hook for Web Audio API sound generation
@@ -39,60 +40,12 @@ export function useAudio() {
     playTone(frequency, duration)
   }, [settings.soundEnabled, playTone])
 
-  const playArpeggio = useCallback(() => {
-    if (!settings.soundEnabled) return
-    const audioContext = getAudioContext()
-
-    // "GO" signal - quick arpeggio using AudioContext timing (not setTimeout)
-    const goFrequencies = [523.25, 659.25, 783.99, 1046.50] // C5, E5, G5, C6
-    const startTime = audioContext.currentTime
-
-    goFrequencies.forEach((freq, index) => {
-      const oscillator = audioContext.createOscillator()
-      const gainNode = audioContext.createGain()
-
-      oscillator.connect(gainNode)
-      gainNode.connect(audioContext.destination)
-
-      oscillator.frequency.value = freq
-      oscillator.type = 'sine'
-
-      const noteStart = startTime + (index * 0.06) // 60ms between notes (matching original)
-      const noteDuration = 0.3
-
-      gainNode.gain.setValueAtTime(0, noteStart)
-      gainNode.gain.linearRampToValueAtTime(0.4, noteStart + 0.01)
-      gainNode.gain.exponentialRampToValueAtTime(0.01, noteStart + noteDuration)
-
-      oscillator.start(noteStart)
-      oscillator.stop(noteStart + noteDuration)
-    })
-  }, [settings.soundEnabled, getAudioContext])
-
-  const playCountdown = useCallback(() => {
-    if (!settings.soundEnabled) return
-    getAudioContext() // Initialize context
-    const frequencies = [523.25, 659.25, 783.99] // C5, E5, G5
-
-    frequencies.forEach((freq, index) => {
-      setTimeout(() => {
-        playTone(freq, 0.15)
-      }, index * 1000)
-    })
-
-    // "GO" signal - quick arpeggio
-    setTimeout(() => {
-      playArpeggio()
-    }, 3000)
-  }, [settings.soundEnabled, getAudioContext, playTone, playArpeggio])
-
   const playCompletionSound = useCallback(() => {
     if (!settings.soundEnabled) return
     const audioContext = getAudioContext()
-    const frequencies = [1046.50, 932.33, 659.25, 523.25] // C6, Bb5, E5, C5 (Mixolydian descending)
     const startTime = audioContext.currentTime
 
-    frequencies.forEach((freq, index) => {
+    END_COUNTDOWN_FREQUENCIES.forEach((freq, index) => {
       const oscillator = audioContext.createOscillator()
       const gainNode = audioContext.createGain()
 
@@ -185,8 +138,6 @@ export function useAudio() {
 
   return {
     playBeep,
-    playArpeggio,
-    playCountdown,
     playCompletionSound,
     playRoutineComplete,
   }

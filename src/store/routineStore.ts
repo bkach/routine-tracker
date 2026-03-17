@@ -1,18 +1,22 @@
 import { create } from 'zustand'
-import type { RoutineStore, RoutineId } from '../types'
+import type { RoutineStore, RoutineId, RoutineConfig } from '../types'
 import {
   loadRoutineLibrary,
   saveRoutineLibrary,
   getActiveRoutineId,
   setActiveRoutineId,
+  clearActiveRoutineId,
   saveRoutineToLibrary as saveRoutineToLib,
   deleteRoutineFromLibrary,
   getRoutineById,
   routineToYaml,
-  generateRoutineId
+  generateRoutineId,
+  checkAndImportFromURL,
 } from '../utils/yaml'
 import { expandExercises } from '../utils/exercises'
 import { loadSettings, saveSettings } from '../utils/settings'
+import { DEFAULT_ROUTINE_TEMPLATE } from '../utils/routineTemplate'
+import { showToast } from '../utils/toast'
 import * as yaml from 'js-yaml'
 
 export const useRoutineStore = create<RoutineStore>((set, get) => ({
@@ -28,7 +32,6 @@ export const useRoutineStore = create<RoutineStore>((set, get) => ({
   isPaused: true,
   timerStarted: false,
   currentDuration: 0,
-  countdownSeconds: null,
   settings: loadSettings(),
   timelineOpen: false,
   editorOpen: false,
@@ -42,7 +45,8 @@ export const useRoutineStore = create<RoutineStore>((set, get) => ({
   infoModal: {
     isOpen: false,
     title: '',
-    messageHtml: '',
+    message: '',
+    isHtml: false,
   },
   isLoading: false,
   error: null,
@@ -53,11 +57,9 @@ export const useRoutineStore = create<RoutineStore>((set, get) => ({
     set({ isLoading: true, error: null })
 
     try {
-      // Check for URL import first (now async)
-      const { checkAndImportFromURL } = await import('../utils/yaml')
       const imported = await checkAndImportFromURL()
 
-      let library = loadRoutineLibrary()
+      const library = loadRoutineLibrary()
       let activeId = getActiveRoutineId()
 
       // If we imported from URL, switch to it
@@ -67,8 +69,7 @@ export const useRoutineStore = create<RoutineStore>((set, get) => ({
 
         // Only show toast if this was a new import (not a duplicate)
         if (imported.isNew) {
-          setTimeout(async () => {
-            const { showToast } = await import('../utils/toast')
+          setTimeout(() => {
             showToast(`"${imported.name}" added to your routines`)
           }, 100)
         }
@@ -88,7 +89,7 @@ export const useRoutineStore = create<RoutineStore>((set, get) => ({
             const response = await fetch(`${import.meta.env.BASE_URL}${starter.file}`)
             if (response.ok) {
               const yamlText = await response.text()
-              const config = yaml.load(yamlText) as any
+              const config = yaml.load(yamlText) as RoutineConfig
               const id = generateRoutineId()
 
               library[id] = {
@@ -193,11 +194,37 @@ export const useRoutineStore = create<RoutineStore>((set, get) => ({
 
   deleteRoutine: (id: RoutineId) => {
     try {
+      const wasActive = get().activeRoutineId === id
       deleteRoutineFromLibrary(id)
 
       // Reload library
       const library = loadRoutineLibrary()
-      set({ routineLibrary: library })
+      const remainingIds = Object.keys(library)
+
+      if (wasActive) {
+        const nextActiveId = remainingIds[0] ?? null
+
+        if (nextActiveId) {
+          set({ routineLibrary: library })
+          void get().selectRoutine(nextActiveId)
+        } else {
+          clearActiveRoutineId()
+          set({
+            routineLibrary: library,
+            activeRoutineId: null,
+            config: null,
+            exercises: [],
+            originalYaml: '',
+            currentYaml: '',
+            currentIndex: 0,
+            elapsedSeconds: 0,
+            isPaused: true,
+            timerStarted: false,
+          })
+        }
+      } else {
+        set({ routineLibrary: library })
+      }
     } catch (error) {
       set({
         error: error instanceof Error ? error.message : 'Failed to delete routine'
@@ -236,7 +263,7 @@ export const useRoutineStore = create<RoutineStore>((set, get) => ({
 
   updateConfig: async (yamlText: string) => {
     try {
-      const config = yaml.load(yamlText) as any
+      const config = yaml.load(yamlText) as RoutineConfig
 
       if (!config) {
         throw new Error('Invalid YAML configuration')
@@ -271,44 +298,12 @@ export const useRoutineStore = create<RoutineStore>((set, get) => ({
   },
 
   resetToDefault: async () => {
-    // Reset to a simple template with instructions
-    const simpleTemplate = `title: New Routine
-subtitle: Custom Routine
-exercises:
-  # Timed Exercise Example
-  - section: Warm-up
-    name: Sample Timed Exercise
-    type: timed              # Use "timed" for duration-based exercises
-    sets: 3
-    duration: 30             # Duration in seconds
-    instructions: Replace with your exercise
-    feel: Optional cue about what to focus on
-    restBetweenSets: 15      # Optional: rest between each set (in seconds)
-    restAfterExercise: 60    # Optional: rest after all sets complete
-
-  # Reps Exercise Example
-  - section: Main Work
-    name: Sample Reps Exercise
-    type: reps               # Use "reps" for rep-based exercises
-    sets: 3
-    reps: "10-12 reps"       # Can be "10 reps", "10 each side", etc.
-    instructions: Replace with your exercise
-    restBetweenSets: 45      # Optional: creates separate cards for each set
-    restAfterExercise: 90
-
-  # Quick Reference:
-  # - Each exercise must have: section, name, type, sets
-  # - Timed exercises need: duration (in seconds)
-  # - Reps exercises need: reps (as text, in quotes)
-  # - Optional fields: instructions, feel, restBetweenSets, restAfterExercise
-  # - Delete these example exercises and add your own!
-`
     try {
       const { activeRoutineId } = get()
       if (activeRoutineId) {
         const routine = getRoutineById(activeRoutineId)
         if (routine) {
-          await get().saveRoutineToLibrary(activeRoutineId, routine.name, simpleTemplate)
+          await get().saveRoutineToLibrary(activeRoutineId, routine.name, DEFAULT_ROUTINE_TEMPLATE)
         }
       }
     } catch (error) {
@@ -329,23 +324,14 @@ exercises:
         elapsedSeconds: 0,
         isPaused: true,
         timerStarted: false,
-        countdownSeconds: null,
       })
 
       // Auto-start timer ONLY if this is an automatic advance (not manual navigation)
       if (isAutoAdvance && settings.autoAdvanceEnabled && nextExercise.type === 'timed') {
-        setTimeout(() => {
-          // If countdown is enabled and not a rest exercise, start countdown first
-          if (settings.countdownEnabled && !nextExercise.isRest) {
-            get().startCountdown(3)
-          } else {
-            // Otherwise start timer directly
-            set({
-              timerStarted: true,
-              isPaused: false,
-            })
-          }
-        }, 100)
+        set({
+          timerStarted: true,
+          isPaused: false,
+        })
       }
     } else {
       // Reached the end - show completion view
@@ -353,7 +339,6 @@ exercises:
         currentIndex: exercises.length,
         isPaused: true,
         timerStarted: false,
-        countdownSeconds: null,
       })
     }
   },
@@ -367,7 +352,6 @@ exercises:
         elapsedSeconds: 0,
         isPaused: true,
         timerStarted: false,
-        countdownSeconds: null,
       })
     }
   },
@@ -381,7 +365,6 @@ exercises:
         elapsedSeconds: 0,
         isPaused: true,
         timerStarted: false,
-        countdownSeconds: null,
       })
     }
   },
@@ -391,7 +374,6 @@ exercises:
     set({
       isPaused: false,
       timerStarted: true,
-      countdownSeconds: null, // Clear any countdown
     })
   },
 
@@ -406,7 +388,6 @@ exercises:
       elapsedSeconds: 0,
       isPaused: true,
       timerStarted: false,
-      countdownSeconds: null,
     })
   },
 
@@ -426,32 +407,6 @@ exercises:
       set({ isPaused: true })
     } else {
       set({ elapsedSeconds: elapsedSeconds + 1 })
-    }
-  },
-
-  // Countdown actions
-  startCountdown: (initialSeconds: number) => {
-    set({
-      countdownSeconds: initialSeconds,
-      isPaused: false,
-    })
-  },
-
-  tickCountdown: () => {
-    const { countdownSeconds, isPaused } = get()
-
-    if (isPaused || countdownSeconds === null) return
-
-    if (countdownSeconds <= 1) {
-      // Countdown finished, start main timer from 0:00 (transition from 1 directly to timer)
-      set({
-        countdownSeconds: null,
-        timerStarted: true,
-        isPaused: false,
-        elapsedSeconds: 0,
-      })
-    } else {
-      set({ countdownSeconds: countdownSeconds - 1 })
     }
   },
 
@@ -498,12 +453,24 @@ exercises:
     })
   },
 
-  showInfo: (title, messageHtml) => {
+  showInfo: (title, message) => {
     set({
       infoModal: {
         isOpen: true,
         title,
-        messageHtml,
+        message,
+        isHtml: false,
+      },
+    })
+  },
+
+  showInfoHtml: (title, message) => {
+    set({
+      infoModal: {
+        isOpen: true,
+        title,
+        message,
+        isHtml: true,
       },
     })
   },
@@ -513,7 +480,8 @@ exercises:
       infoModal: {
         isOpen: false,
         title: '',
-        messageHtml: '',
+        message: '',
+        isHtml: false,
       },
     })
   },

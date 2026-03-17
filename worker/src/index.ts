@@ -2,6 +2,12 @@ export interface Env {
   WORKOUTS: KVNamespace;
 }
 
+function looksLikeRoutineYaml(yamlText: string): boolean {
+  return /^\s*title\s*:/m.test(yamlText) &&
+    /^\s*exercises\s*:/m.test(yamlText) &&
+    /^\s*-\s+section\s*:/m.test(yamlText)
+}
+
 // Generate a short random slug (4-6 characters, lowercase alphanumeric)
 function generateSlug(): string {
   const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
@@ -56,6 +62,16 @@ export default {
           );
         }
 
+        if (!looksLikeRoutineYaml(yamlText)) {
+          return new Response(
+            JSON.stringify({ error: 'Invalid routine format' }),
+            {
+              status: 400,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            }
+          );
+        }
+
         // Generate unique slug
         let slug = generateSlug();
         let attempts = 0;
@@ -83,7 +99,7 @@ export default {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           }
         );
-      } catch (error) {
+      } catch {
         return new Response(
           JSON.stringify({ error: 'Failed to save workout' }),
           {
@@ -119,7 +135,7 @@ export default {
           status: 200,
           headers: { ...corsHeaders, 'Content-Type': 'text/plain' },
         });
-      } catch (error) {
+      } catch {
         return new Response('Failed to retrieve workout', {
           status: 500,
           headers: corsHeaders,

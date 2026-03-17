@@ -63,7 +63,7 @@ export interface RoutineLibrary {
 // Settings
 export interface Settings {
   soundEnabled: boolean
-  countdownEnabled: boolean
+  endCountdownEnabled: boolean
   autoAdvanceEnabled: boolean
 }
 
@@ -87,7 +87,6 @@ export interface RoutineState {
   isPaused: boolean
   timerStarted: boolean
   currentDuration: number
-  countdownSeconds: number | null
 
   // Settings
   settings: Settings
@@ -105,7 +104,8 @@ export interface RoutineState {
   infoModal: {
     isOpen: boolean
     title: string
-    messageHtml: string
+    message: string
+    isHtml: boolean
   }
 
   // Loading/error
@@ -150,12 +150,10 @@ export interface RoutineActions {
   setSettingsOpen: (open: boolean) => void
   showConfirm: (title: string, message: string, onConfirm: () => void) => void
   hideConfirm: () => void
-  showInfo: (title: string, messageHtml: string) => void
+  showInfo: (title: string, message: string) => void
+  showInfoHtml: (title: string, messageHtml: string) => void
   hideInfo: () => void
 
-  // Countdown
-  startCountdown: (seconds: number) => void
-  tickCountdown: () => void
 }
 
 // Complete store type

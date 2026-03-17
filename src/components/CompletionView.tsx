@@ -11,7 +11,7 @@ export function CompletionView() {
   }, [playRoutineComplete])
 
   const handleRestart = () => {
-    loadConfig()
+    void loadConfig()
   }
 
   return (

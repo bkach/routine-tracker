@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { useRoutineStore } from '../store/routineStore'
 import { useAudio } from './useAudio'
+import { END_COUNTDOWN_FREQUENCIES } from '../utils/sound'
 
 /**
  * Custom hook to manage timer functionality
@@ -15,11 +16,11 @@ export function useTimer() {
     settings,
     tick,
     nextExercise,
-    countdownSeconds,
   } = useRoutineStore()
 
   const { playBeep, playCompletionSound } = useAudio()
   const intervalRef = useRef<number | null>(null)
+  const autoAdvanceTimeoutRef = useRef<number | null>(null)
   const previousElapsedRef = useRef(0)
 
   const currentExercise = exercises[currentIndex]
@@ -27,9 +28,8 @@ export function useTimer() {
   const remainingSeconds = duration - elapsedSeconds
 
   // Timer interval effect
-  // IMPORTANT: Pause exercise timer when countdown is active
   useEffect(() => {
-    const shouldRunTimer = !isPaused && currentExercise?.type === 'timed' && countdownSeconds === null
+    const shouldRunTimer = !isPaused && currentExercise?.type === 'timed'
 
     if (shouldRunTimer) {
       intervalRef.current = window.setInterval(() => {
@@ -47,22 +47,29 @@ export function useTimer() {
         clearInterval(intervalRef.current)
       }
     }
-  }, [isPaused, currentExercise, tick, countdownSeconds])
+  }, [isPaused, currentExercise, tick])
 
-  // Beep sounds for countdown (C Mixolydian descending)
-  // Don't play these beeps when countdown timer is active
   useEffect(() => {
-    if (!settings.soundEnabled || isPaused || countdownSeconds !== null) return
-
-    // Play beeps at 3, 2, 1 seconds remaining with Mixolydian frequencies
-    if (remainingSeconds === 3) {
-      playBeep(932.33, 0.15) // Bb5
-    } else if (remainingSeconds === 2) {
-      playBeep(659.25, 0.15) // E5
-    } else if (remainingSeconds === 1) {
-      playBeep(523.25, 0.15) // C5
+    return () => {
+      if (autoAdvanceTimeoutRef.current !== null) {
+        clearTimeout(autoAdvanceTimeoutRef.current)
+      }
     }
-  }, [remainingSeconds, settings.soundEnabled, isPaused, playBeep, countdownSeconds])
+  }, [])
+
+  // Play 3-2-1 warning tones at the end of the timer.
+  useEffect(() => {
+    if (!settings.soundEnabled || isPaused || !settings.endCountdownEnabled) return
+
+    // Reuse the former pre-start countdown tones for the end-of-timer warning.
+    if (remainingSeconds === 3) {
+      playBeep(END_COUNTDOWN_FREQUENCIES[0], 0.15)
+    } else if (remainingSeconds === 2) {
+      playBeep(END_COUNTDOWN_FREQUENCIES[1], 0.15)
+    } else if (remainingSeconds === 1) {
+      playBeep(END_COUNTDOWN_FREQUENCIES[2], 0.15)
+    }
+  }, [remainingSeconds, settings.soundEnabled, settings.endCountdownEnabled, isPaused, playBeep])
 
   // Completion sound and auto-advance
   useEffect(() => {
@@ -79,14 +86,33 @@ export function useTimer() {
 
       // Auto-advance if enabled (after 1 second delay)
       if (settings.autoAdvanceEnabled) {
-        setTimeout(() => {
-          nextExercise(true) // Pass true to indicate this is an automatic advance
+        const completedIndex = currentIndex
+        if (autoAdvanceTimeoutRef.current !== null) {
+          clearTimeout(autoAdvanceTimeoutRef.current)
+        }
+        autoAdvanceTimeoutRef.current = window.setTimeout(() => {
+          if (useRoutineStore.getState().currentIndex === completedIndex) {
+            nextExercise(true)
+          }
         }, 1000)
       }
     }
 
+    if (autoAdvanceTimeoutRef.current !== null && elapsedSeconds < duration) {
+      clearTimeout(autoAdvanceTimeoutRef.current)
+      autoAdvanceTimeoutRef.current = null
+    }
+
     previousElapsedRef.current = elapsedSeconds
-  }, [elapsedSeconds, duration, settings.soundEnabled, settings.autoAdvanceEnabled, playCompletionSound, nextExercise])
+  }, [
+    elapsedSeconds,
+    duration,
+    currentIndex,
+    settings.soundEnabled,
+    settings.autoAdvanceEnabled,
+    playCompletionSound,
+    nextExercise,
+  ])
 
   return {
     remainingSeconds,

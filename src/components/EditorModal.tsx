@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useRoutineStore } from '../store/routineStore'
 import { validateYamlConfig, saveWorkoutToSlug } from '../utils/yaml'
 import { showToast } from '../utils/toast'
+import { DEFAULT_ROUTINE_TEMPLATE } from '../utils/routineTemplate'
 
 export function EditorModal() {
   const {
@@ -11,6 +12,7 @@ export function EditorModal() {
     updateConfig,
     showConfirm,
     showInfo,
+    showInfoHtml,
   } = useRoutineStore()
 
   const handleShowRoutineInfo = () => {
@@ -34,13 +36,13 @@ Please output only the YAML file in a code block.</code>
       </div>
       <p>That's it! The AI handles all the formatting for you.</p>
     `
-    showInfo('Create Your Own Routine', messageHtml)
+    showInfoHtml('Create Your Own Routine', messageHtml)
 
     // Attach copy handler after modal is shown
     setTimeout(() => {
-      const copyBtn = document.getElementById('routinePromptCopyBtn')
+      const copyBtn = document.getElementById('routinePromptCopyBtn') as HTMLButtonElement | null
       if (copyBtn) {
-        copyBtn.addEventListener('click', handleCopyRoutinePrompt)
+        copyBtn.onclick = handleCopyRoutinePrompt
       }
     }, 100)
   }
@@ -115,7 +117,7 @@ Please output only the YAML file in a code block.`
     const validation = validateYamlConfig(editedYaml)
 
     if (!validation.valid) {
-      showInfo('Configuration Error', `<p>⚠️ ${validation.error}</p>`)
+      showInfo('Configuration Error', validation.error ?? 'Unknown configuration error')
       return
     }
 
@@ -126,7 +128,7 @@ Please output only the YAML file in a code block.`
     } catch (err) {
       showInfo(
         'Save Failed',
-        `<p>⚠️ Failed to save: ${err instanceof Error ? err.message : 'Unknown error'}</p>`
+        `Failed to save: ${err instanceof Error ? err.message : 'Unknown error'}`
       )
     }
   }
@@ -136,44 +138,19 @@ Please output only the YAML file in a code block.`
       'Reset Editor',
       'Replace the editor content with a simple template?',
       () => {
-        const simpleTemplate = `title: New Routine
-subtitle: Custom Routine
-exercises:
-  # Timed Exercise Example
-  - section: Warm-up
-    name: Sample Timed Exercise
-    type: timed              # Use "timed" for duration-based exercises
-    sets: 3
-    duration: 30             # Duration in seconds
-    instructions: Replace with your exercise
-    feel: Optional cue about what to focus on
-    restBetweenSets: 15      # Optional: rest between each set (in seconds)
-    restAfterExercise: 60    # Optional: rest after all sets complete
-
-  # Reps Exercise Example
-  - section: Main Work
-    name: Sample Reps Exercise
-    type: reps               # Use "reps" for rep-based exercises
-    sets: 3
-    reps: "10-12 reps"       # Can be "10 reps", "10 each side", etc.
-    instructions: Replace with your exercise
-    restBetweenSets: 45      # Optional: creates separate cards for each set
-    restAfterExercise: 90
-
-  # Quick Reference:
-  # - Each exercise must have: section, name, type, sets
-  # - Timed exercises need: duration (in seconds)
-  # - Reps exercises need: reps (as text, in quotes)
-  # - Optional fields: instructions, feel, restBetweenSets, restAfterExercise
-  # - Delete these example exercises and add your own!
-`
-        setEditedYaml(simpleTemplate)
+        setEditedYaml(DEFAULT_ROUTINE_TEMPLATE)
         showToast('↺ Editor reset to template')
       }
     )
   }
 
   const handleShare = async () => {
+    const validation = validateYamlConfig(editedYaml)
+    if (!validation.valid) {
+      showInfo('Share Failed', validation.error ?? 'Invalid YAML configuration')
+      return
+    }
+
     try {
       // Save workout and get slug
       const slug = await saveWorkoutToSlug(editedYaml)
@@ -203,7 +180,7 @@ exercises:
     } catch (error) {
       showInfo(
         'Share Failed',
-        `<p>⚠️ Failed to create share link: ${error instanceof Error ? error.message : 'Unknown error'}</p><p>Make sure the sharing service is available.</p>`
+        `Failed to create share link: ${error instanceof Error ? error.message : 'Unknown error'}\n\nMake sure the sharing service is available.`
       )
     }
   }

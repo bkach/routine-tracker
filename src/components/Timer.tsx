@@ -8,12 +8,19 @@ interface TimerProps {
 }
 
 export function Timer({ elapsedSeconds, duration, isRest }: TimerProps) {
-  const { countdownSeconds } = useRoutineStore()
+  const { isPaused, timerStarted, settings } = useRoutineStore()
   const elapsed = formatTime(elapsedSeconds)
   const total = formatTime(duration)
+  const remainingSeconds = duration - elapsedSeconds
 
-  // Show countdown if active, otherwise show timer
-  const displayText = countdownSeconds !== null ? String(countdownSeconds) : `${elapsed} / ${total}`
+  const showEndCountdown =
+    settings.endCountdownEnabled &&
+    timerStarted &&
+    !isPaused &&
+    remainingSeconds > 0 &&
+    remainingSeconds <= 3
+
+  const displayText = showEndCountdown ? String(remainingSeconds) : `${elapsed} / ${total}`
 
   return (
     <div className={`timer-display ${isRest ? 'rest' : ''}`} id="timerContainer">
