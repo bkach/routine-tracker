@@ -2,7 +2,7 @@ import type { Settings } from '../types'
 
 const STORAGE_KEYS = {
   soundEnabled: 'soundEnabled',
-  countdownEnabled: 'countdownEnabled',
+  endCountdownEnabled: 'endCountdownEnabled',
   autoAdvanceEnabled: 'autoAdvanceEnabled',
 } as const
 
@@ -10,9 +10,12 @@ const STORAGE_KEYS = {
  * Load settings from localStorage
  */
 export function loadSettings(): Settings {
+  const storedEndCountdown = localStorage.getItem(STORAGE_KEYS.endCountdownEnabled)
+  const legacyCountdown = localStorage.getItem('countdownEnabled')
+
   return {
     soundEnabled: localStorage.getItem(STORAGE_KEYS.soundEnabled) === 'true',
-    countdownEnabled: localStorage.getItem(STORAGE_KEYS.countdownEnabled) === 'true',
+    endCountdownEnabled: storedEndCountdown !== null ? storedEndCountdown === 'true' : legacyCountdown === 'true',
     autoAdvanceEnabled: localStorage.getItem(STORAGE_KEYS.autoAdvanceEnabled) === 'true',
   }
 }
@@ -22,7 +25,7 @@ export function loadSettings(): Settings {
  */
 export function saveSettings(settings: Settings): void {
   localStorage.setItem(STORAGE_KEYS.soundEnabled, String(settings.soundEnabled))
-  localStorage.setItem(STORAGE_KEYS.countdownEnabled, String(settings.countdownEnabled))
+  localStorage.setItem(STORAGE_KEYS.endCountdownEnabled, String(settings.endCountdownEnabled))
   localStorage.setItem(STORAGE_KEYS.autoAdvanceEnabled, String(settings.autoAdvanceEnabled))
 }
 

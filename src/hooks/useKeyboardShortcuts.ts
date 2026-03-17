@@ -12,11 +12,8 @@ export function useKeyboardShortcuts() {
   const {
     isPaused,
     timerStarted,
-    settings,
-    countdownSeconds,
     startTimer,
     pauseTimer,
-    startCountdown,
     nextExercise,
     previousExercise,
     exercises,
@@ -33,11 +30,6 @@ export function useKeyboardShortcuts() {
     hideInfo,
   } = useRoutineStore()
 
-  // Direct state setter for resuming countdown
-  const resumeCountdown = () => {
-    useRoutineStore.setState({ isPaused: false })
-  }
-
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       // Check if user is typing in an input/textarea
@@ -52,22 +44,7 @@ export function useKeyboardShortcuts() {
         case ' ':
           event.preventDefault()
           if (currentExercise?.type === 'timed') {
-            // If countdown is active and running, pause it
-            if (countdownSeconds !== null && !isPaused) {
-              pauseTimer()
-              return
-            }
-
-            // If countdown is paused, resume it (just unpause, don't start main timer)
-            if (countdownSeconds !== null && isPaused) {
-              resumeCountdown()
-              return
-            }
-
-            if (isPaused && !timerStarted && settings.countdownEnabled && !currentExercise.isRest) {
-              // Start countdown from 3 (sounds will play in sync with countdown ticks)
-              startCountdown(3)
-            } else if (isPaused) {
+            if (isPaused) {
               startTimer()
             } else {
               pauseTimer()
@@ -114,11 +91,8 @@ export function useKeyboardShortcuts() {
   }, [
     isPaused,
     timerStarted,
-    settings,
-    countdownSeconds,
     startTimer,
     pauseTimer,
-    startCountdown,
     nextExercise,
     previousExercise,
     exercises,
@@ -126,8 +100,12 @@ export function useKeyboardShortcuts() {
     timelineOpen,
     editorOpen,
     settingsOpen,
+    confirmModal.isOpen,
+    infoModal.isOpen,
     setTimelineOpen,
     setEditorOpen,
     setSettingsOpen,
+    hideConfirm,
+    hideInfo,
   ])
 }

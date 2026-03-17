@@ -3,11 +3,12 @@ import { useEffect } from 'react'
 interface InfoModalProps {
   isOpen: boolean
   title: string
-  messageHtml: string
+  message: string
+  isHtml: boolean
   onClose: () => void
 }
 
-export function InfoModal({ isOpen, title, messageHtml, onClose }: InfoModalProps) {
+export function InfoModal({ isOpen, title, message, isHtml, onClose }: InfoModalProps) {
   useEffect(() => {
     // Handle escape key
     const handleEscape = (e: KeyboardEvent) => {
@@ -49,11 +50,17 @@ export function InfoModal({ isOpen, title, messageHtml, onClose }: InfoModalProp
           ×
         </button>
         <div className="info-title" id="infoTitle">{title}</div>
-        <div
-          className="info-message"
-          id="infoMessage"
-          dangerouslySetInnerHTML={{ __html: messageHtml }}
-        />
+        {isHtml ? (
+          <div
+            className="info-message"
+            id="infoMessage"
+            dangerouslySetInnerHTML={{ __html: message }}
+          />
+        ) : (
+          <div className="info-message" id="infoMessage">
+            <p>{message}</p>
+          </div>
+        )}
         <div className="info-actions">
           <button
             className="btn btn-primary"

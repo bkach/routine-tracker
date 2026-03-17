@@ -103,7 +103,8 @@ function App() {
       <InfoModal
         isOpen={infoModal.isOpen}
         title={infoModal.title}
-        messageHtml={infoModal.messageHtml}
+        message={infoModal.message}
+        isHtml={infoModal.isHtml}
         onClose={hideInfo}
       />
 
