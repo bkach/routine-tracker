@@ -1,11 +1,13 @@
 interface RepsDisplayProps {
   reps: string
   totalSets?: number
+  setNumber?: number
 }
 
-export function RepsDisplay({ reps, totalSets }: RepsDisplayProps) {
-  // Format display: if multiple sets without restBetweenSets, show "X sets of Y"
-  const displayText = totalSets && totalSets > 1
+export function RepsDisplay({ reps, totalSets, setNumber }: RepsDisplayProps) {
+  // Only show the aggregate "X sets of Y" text when the exercise is not
+  // already expanded into one card per set.
+  const displayText = totalSets && totalSets > 1 && !setNumber
     ? `${totalSets} sets of ${reps}`
     : reps
 

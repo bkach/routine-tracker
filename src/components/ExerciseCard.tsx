@@ -31,7 +31,11 @@ export function ExerciseCard({ exercise, nextExercise }: ExerciseCardProps) {
           isRest={exercise.isRest}
         />
       ) : (
-        <RepsDisplay reps={exercise.reps || ''} totalSets={exercise.totalSets} />
+        <RepsDisplay
+          reps={exercise.reps || ''}
+          totalSets={exercise.totalSets}
+          setNumber={exercise.setNumber}
+        />
       )}
 
       <div className="instructions">

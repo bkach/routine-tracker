@@ -113,8 +113,11 @@ export function getSetInfo(exercise: ExpandedExercise): string {
   }
 
   if (exercise.type === 'reps' && !exercise.setNumber) {
-    // Combined reps display
-    return `${exercise.totalSets} sets of ${exercise.reps}`
+    // Combined reps display for multi-set exercises only.
+    if (exercise.totalSets && exercise.totalSets > 1) {
+      return `${exercise.totalSets} sets of ${exercise.reps}`
+    }
+    return ''
   }
 
   if (exercise.setNumber && exercise.totalSets) {
