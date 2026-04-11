@@ -27,12 +27,11 @@ export function EditorModal() {
       <p><strong>Copy this prompt:</strong></p>
       <div class="info-code-block">
         <button class="info-code-copy-btn" id="routinePromptCopyBtn">Copy</button>
-        <code>Can you create a YAML file for a workout routine with [describe your workout here]?
+        <code>Create a YAML workout routine from this description: [describe your workout here]
 
-The YAML should have this structure:
-[Full specification included when you copy]
+Return exactly one fenced yaml code block and no other text.
 
-Please output only the YAML file in a code block.</code>
+[Full specification and example included when you copy]</code>
       </div>
       <p>That's it! The AI handles all the formatting for you.</p>
     `
@@ -48,49 +47,101 @@ Please output only the YAML file in a code block.</code>
   }
 
   const handleCopyRoutinePrompt = () => {
-    const fullPrompt = `Can you create a YAML file for a workout routine with [describe your workout here - e.g., "3 sets of 20 push-ups, 3 sets of 15 squats with 24kg kettlebell, 1 minute plank, and 1 minute side plank on each side"]?
+    const fullPrompt = `Create a YAML workout routine from this description: [describe your workout here - e.g., "3 sets of 20 push-ups, 3 sets of 15 squats with 24kg kettlebell, 1 minute plank, and 1 minute side plank on each side"]
 
-The YAML should have this exact structure:
+Return exactly one fenced \`yaml\` code block and no other text.
+
+Use this top-level YAML shape and field names exactly. Include optional fields only when applicable:
 
 \`\`\`yaml
 title: "Workout Name"
-subtitle: "Duration • Frequency"
+subtitle: "Custom Routine"
 exercises:
-  - section: "Warm-Up"
+  - section: "Section Name"
     name: "Exercise Name"
     type: "reps"
     sets: 2
     reps: "10 reps"
     instructions: "How to perform the exercise"
     feel: null
-    restBetweenSets: 30  # Optional - rest between each set
-    restAfterExercise: 60  # Optional - rest after all sets
-  - section: "Main Workout"
-    name: "Another Exercise"
-    type: "timed"
-    sets: 3
-    duration: 45
-    instructions: "Hold this position"
-    feel: "Core engagement"
-    restBetweenSets: 20  # Optional - rest between sets
-    restAfterExercise: 90  # Optional - rest after exercise
+    restBetweenSets: 30
+    restAfterExercise: 60
 \`\`\`
 
-Critical rules:
-- title and subtitle are NOT list items (no dash before them)
-- Each exercise under exercises: IS a list item (dash before section:)
-- Type must be exactly "reps" or "timed" (in quotes)
-- For "reps" exercises: include sets, reps, instructions, feel (optional)
-- For "timed" exercises: include sets, duration (seconds), instructions, feel (optional)
-- restBetweenSets (optional): Duration in seconds for rest between each set
-  * Automatically injects rest periods between sets
-  * For reps exercises: causes expansion to separate cards (one per set)
-- restAfterExercise (optional): Duration in seconds for rest after completing all sets
-  * Adds a recovery period after the exercise is done
-- Each timed exercise with sets > 1 creates multiple cards (one per set)
-- For reps exercises: multiple sets shown on one card UNLESS restBetweenSets is specified
+Example of a valid routine:
 
-Please output only the YAML file in a code block.`
+\`\`\`yaml
+title: "Upper Body + Core"
+subtitle: "Custom Routine"
+
+exercises:
+  - section: "Warm-Up"
+    name: "Arm Circles"
+    type: "timed"
+    sets: 1
+    duration: 30  # duration is always in whole seconds
+    instructions: "Make controlled forward and backward circles with both arms."
+    feel: "Shoulders warming up"
+
+  - section: "Main Workout"
+    name: "Push-ups"
+    type: "reps"
+    sets: 3
+    reps: "12 reps"
+    instructions: "Keep your body in a straight line and lower your chest with control."
+    feel: "Chest, shoulders, and triceps working"
+    restBetweenSets: 45  # include only when the workout description explicitly states rest between sets
+
+  - section: "Main Workout"
+    name: "Plank"
+    type: "timed"
+    sets: 2
+    duration: 45
+    instructions: "Hold a straight line from shoulders to heels."
+    feel: "Core engagement"
+    restBetweenSets: 20
+
+  - section: "Main Workout"
+    name: "Side Plank (Left)"
+    type: "timed"
+    sets: 1
+    duration: 30
+    instructions: "Support yourself on your left forearm and keep hips lifted."
+    feel: "Left obliques working"
+
+  - section: "Main Workout"
+    name: "Side Plank (Right)"
+    type: "timed"
+    sets: 1
+    duration: 30
+    instructions: "Support yourself on your right forearm and keep hips lifted."
+    feel: "Right obliques working"
+    restAfterExercise: 30  # include only when the workout description explicitly states recovery after the full exercise
+
+  - section: "Cool Down"
+    name: "Child's Pose"
+    type: "timed"
+    sets: 1
+    duration: 60
+    instructions: "Sit back on your heels, reach your arms forward, and breathe slowly."
+    feel: null  # use null when no clear physical cue is implied
+\`\`\`
+
+Rules:
+- Place \`title\` and \`subtitle\` at the top level, above \`exercises:\`.
+- Under \`exercises:\`, each exercise must be a properly indented YAML list item beginning with \`-\`.
+- \`type\` must be exactly \`"reps"\` or \`"timed"\`. Do not use any other value.
+- For \`"reps"\` exercises, always include \`sets\`, \`reps\`, \`instructions\`, and \`feel\`.
+- For \`"timed"\` exercises, always include \`sets\`, \`duration\` as a whole number of seconds, \`instructions\`, and \`feel\`.
+- Always include \`feel\`. Use \`feel: null\` when no specific physical cue is clearly implied.
+- Include \`restBetweenSets\` only when the workout description explicitly states rest between sets.
+- Include \`restAfterExercise\` only when the workout description explicitly states recovery after the full exercise or full set block.
+- Do not manually duplicate exercises to represent sets. Define each exercise once with its total number of sets.
+- Infer a concise \`title\` and section names from the workout description.
+- For \`subtitle\`, include only details explicitly provided by the user or directly computable from the routine. Do not invent frequency. If no reliable subtitle can be inferred, use \`"Custom Routine"\`.
+- If a timed exercise is clearly performed separately per side, create separate exercise entries for each side unless the description explicitly says both sides are covered in one timed block.
+- Do not add any fields that are not part of this schema.
+- The YAML must be syntactically valid.`
 
     navigator.clipboard.writeText(fullPrompt).then(() => {
       const btn = document.getElementById('routinePromptCopyBtn')

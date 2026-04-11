@@ -318,16 +318,24 @@ export const useRoutineStore = create<RoutineStore>((set, get) => ({
     if (currentIndex < exercises.length - 1) {
       const nextIndex = currentIndex + 1
       const nextExercise = exercises[nextIndex]
+      const shouldAutoStartTimedExercise =
+        isAutoAdvance && settings.autoAdvanceEnabled && nextExercise.type === 'timed'
+      // Auto-advance waits one second after the completion tone, so timed cards
+      // start one second in to avoid visually repeating their opening second.
+      const autoAdvanceElapsedSeconds =
+        shouldAutoStartTimedExercise && typeof nextExercise.duration === 'number' && nextExercise.duration > 1
+          ? 1
+          : 0
 
       set({
         currentIndex: nextIndex,
-        elapsedSeconds: 0,
+        elapsedSeconds: autoAdvanceElapsedSeconds,
         isPaused: true,
         timerStarted: false,
       })
 
       // Auto-start timer ONLY if this is an automatic advance (not manual navigation)
-      if (isAutoAdvance && settings.autoAdvanceEnabled && nextExercise.type === 'timed') {
+      if (shouldAutoStartTimedExercise) {
         set({
           timerStarted: true,
           isPaused: false,

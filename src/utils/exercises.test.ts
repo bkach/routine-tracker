@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { expandExercises } from './exercises'
-import type { Exercise } from '../types'
+import {
+  calculateRemainingWorkoutTime,
+  expandExercises,
+  isFullyTimedRoutine,
+} from './exercises'
+import type { Exercise, ExpandedExercise } from '../types'
 
 describe('expandExercises', () => {
   it('keeps reps exercises with no restBetweenSets on a single card', () => {
@@ -80,5 +84,64 @@ describe('expandExercises', () => {
         restDuration: 20,
       },
     ])
+  })
+
+  it('identifies fully timed expanded routines', () => {
+    const timedExercises: ExpandedExercise[] = [
+      {
+        section: 'Warm-Up',
+        name: 'Rest',
+        type: 'timed',
+        duration: 20,
+        isRest: true,
+      },
+      {
+        section: 'Main',
+        name: 'Wall Sit',
+        type: 'timed',
+        duration: 45,
+      },
+    ]
+
+    const mixedExercises: ExpandedExercise[] = [
+      ...timedExercises,
+      {
+        section: 'Main',
+        name: 'Push-ups',
+        type: 'reps',
+        reps: '10 reps',
+      },
+    ]
+
+    expect(isFullyTimedRoutine(timedExercises)).toBe(true)
+    expect(isFullyTimedRoutine(mixedExercises)).toBe(false)
+  })
+
+  it('calculates remaining workout time from the current timed card onward', () => {
+    const exercises: ExpandedExercise[] = [
+      {
+        section: 'Warm-Up',
+        name: 'Jumping Jacks',
+        type: 'timed',
+        duration: 60,
+      },
+      {
+        section: 'Warm-Up',
+        name: 'Rest',
+        type: 'timed',
+        duration: 15,
+        isRest: true,
+      },
+      {
+        section: 'Main',
+        name: 'Plank',
+        type: 'timed',
+        duration: 45,
+      },
+    ]
+
+    expect(calculateRemainingWorkoutTime(exercises, 0, 20)).toBe(100)
+    expect(calculateRemainingWorkoutTime(exercises, 1, 5)).toBe(55)
+    expect(calculateRemainingWorkoutTime(exercises, 3, 0)).toBe(0)
   })
 })

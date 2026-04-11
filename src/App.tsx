@@ -18,6 +18,7 @@ function App() {
     config,
     exercises,
     currentIndex,
+    elapsedSeconds,
     settings,
     isPaused,
     timerStarted,
@@ -163,7 +164,9 @@ function App() {
             <ProgressBar
               currentIndex={currentIndex}
               totalExercises={exercises.length}
+              exercises={exercises}
               currentExercise={exercises[currentIndex]}
+              elapsedSeconds={elapsedSeconds}
             />
 
             {/* Exercise card */}

@@ -140,6 +140,36 @@ export function calculateTotalDuration(exercises: ExpandedExercise[]): number {
 }
 
 /**
+ * Whether every card in the routine is timed, including injected rest cards.
+ */
+export function isFullyTimedRoutine(exercises: ExpandedExercise[]): boolean {
+  return exercises.length > 0 && exercises.every((exercise) => exercise.type === 'timed' && typeof exercise.duration === 'number')
+}
+
+/**
+ * Calculate the remaining workout time from the current card onward.
+ */
+export function calculateRemainingWorkoutTime(
+  exercises: ExpandedExercise[],
+  currentIndex: number,
+  elapsedSeconds: number,
+): number {
+  if (currentIndex >= exercises.length) {
+    return 0
+  }
+
+  return exercises.slice(currentIndex).reduce((remaining, exercise, index) => {
+    const duration = exercise.duration ?? 0
+
+    if (index === 0) {
+      return remaining + Math.max(duration - elapsedSeconds, 0)
+    }
+
+    return remaining + duration
+  }, 0)
+}
+
+/**
  * Calculate progress percentage
  */
 export function calculateProgress(currentIndex: number, totalExercises: number): number {

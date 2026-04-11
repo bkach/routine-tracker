@@ -83,6 +83,15 @@
             transition: width 0.3s ease;
         }
 
+        .progress-subtext {
+            margin-top: -12px;
+            margin-bottom: 20px;
+            color: #888;
+            font-size: 14px;
+            font-weight: 500;
+            text-align: right;
+        }
+
         .exercise-card {
             background: #f8f9fa;
             border-radius: 15px;
