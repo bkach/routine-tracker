@@ -3,6 +3,7 @@ import type { Settings } from '../types'
 const STORAGE_KEYS = {
   speechEnabled: 'speechEnabled',
   timerSoundEnabled: 'timerSoundEnabled',
+  halfwayChimeEnabled: 'halfwayChimeEnabled',
   autoAdvanceEnabled: 'autoAdvanceEnabled',
 } as const
 
@@ -23,6 +24,7 @@ export function loadSettings(): Settings {
         : legacyCountdownSound !== null
           ? legacyCountdownSound === 'true'
           : legacySoundEnabled === 'true' || legacyCountdown === 'true',
+    halfwayChimeEnabled: localStorage.getItem(STORAGE_KEYS.halfwayChimeEnabled) === 'true',
     autoAdvanceEnabled: localStorage.getItem(STORAGE_KEYS.autoAdvanceEnabled) === 'true',
   }
 }
@@ -33,6 +35,7 @@ export function loadSettings(): Settings {
 export function saveSettings(settings: Settings): void {
   localStorage.setItem(STORAGE_KEYS.speechEnabled, String(settings.speechEnabled))
   localStorage.setItem(STORAGE_KEYS.timerSoundEnabled, String(settings.timerSoundEnabled))
+  localStorage.setItem(STORAGE_KEYS.halfwayChimeEnabled, String(settings.halfwayChimeEnabled))
   localStorage.setItem(STORAGE_KEYS.autoAdvanceEnabled, String(settings.autoAdvanceEnabled))
 }
 

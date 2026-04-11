@@ -39,6 +39,7 @@ describe('useTimer auto-advance', () => {
       settings: {
         speechEnabled: false,
         timerSoundEnabled: true,
+        halfwayChimeEnabled: false,
         autoAdvanceEnabled: true,
       },
     })

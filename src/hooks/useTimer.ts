@@ -10,6 +10,7 @@ import { END_COUNTDOWN_FREQUENCIES } from '../utils/sound'
 export function useTimer() {
   const {
     isPaused,
+    timerStarted,
     elapsedSeconds,
     exercises,
     currentIndex,
@@ -22,6 +23,7 @@ export function useTimer() {
   const intervalRef = useRef<number | null>(null)
   const autoAdvanceTimeoutRef = useRef<number | null>(null)
   const previousElapsedRef = useRef(0)
+  const halfwayChimedRef = useRef(false)
 
   const currentExercise = exercises[currentIndex]
   const duration = currentExercise?.duration || 0
@@ -56,6 +58,31 @@ export function useTimer() {
       }
     }
   }, [])
+
+  useEffect(() => {
+    halfwayChimedRef.current = false
+  }, [currentIndex, timerStarted])
+
+  useEffect(() => {
+    if (!settings.timerSoundEnabled || !settings.halfwayChimeEnabled || isPaused) return
+    if (currentExercise?.type !== 'timed' || !duration) return
+
+    const halfwayPoint = Math.floor(duration / 2)
+    if (halfwayPoint <= 0 || halfwayChimedRef.current) return
+
+    if (elapsedSeconds >= halfwayPoint) {
+      playBeep(1000, 0.2)
+      halfwayChimedRef.current = true
+    }
+  }, [
+    elapsedSeconds,
+    duration,
+    currentExercise,
+    isPaused,
+    settings.timerSoundEnabled,
+    settings.halfwayChimeEnabled,
+    playBeep,
+  ])
 
   // Play 3-2-1 warning tones at the end of the timer.
   useEffect(() => {

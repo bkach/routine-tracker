@@ -64,6 +64,7 @@ export interface RoutineLibrary {
 export interface Settings {
   speechEnabled: boolean
   timerSoundEnabled: boolean
+  halfwayChimeEnabled: boolean
   autoAdvanceEnabled: boolean
 }
 

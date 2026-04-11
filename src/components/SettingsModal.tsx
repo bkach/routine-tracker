@@ -53,6 +53,25 @@ export function SettingsModal() {
               </span>
             </label>
           </div>
+          {settings.timerSoundEnabled && (
+            <div className="setting-item">
+              <label className="setting-label">
+                <input
+                  type="checkbox"
+                  id="halfwayChimeEnabledCheckbox"
+                  className="setting-checkbox"
+                  checked={settings.halfwayChimeEnabled}
+                  onChange={(e) =>
+                    updateSettings({ halfwayChimeEnabled: e.target.checked })
+                  }
+                />
+                <span className="setting-text">
+                  <strong>Play halfway chime</strong>
+                  <small>Play a short beep halfway through timed exercises</small>
+                </span>
+              </label>
+            </div>
+          )}
           <div className="setting-item">
             <label className="setting-label">
               <input
