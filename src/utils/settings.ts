@@ -4,6 +4,7 @@ const STORAGE_KEYS = {
   speechEnabled: 'speechEnabled',
   timerSoundEnabled: 'timerSoundEnabled',
   halfwayChimeEnabled: 'halfwayChimeEnabled',
+  keepScreenAwake: 'keepScreenAwake',
   autoAdvanceEnabled: 'autoAdvanceEnabled',
 } as const
 
@@ -12,6 +13,8 @@ const STORAGE_KEYS = {
  */
 export function loadSettings(): Settings {
   const storedTimerSound = localStorage.getItem(STORAGE_KEYS.timerSoundEnabled)
+  const storedKeepScreenAwake = localStorage.getItem(STORAGE_KEYS.keepScreenAwake)
+  const storedAutoAdvance = localStorage.getItem(STORAGE_KEYS.autoAdvanceEnabled)
   const legacyCountdown = localStorage.getItem('countdownEnabled')
   const legacySoundEnabled = localStorage.getItem('soundEnabled')
   const legacyCountdownSound = localStorage.getItem('countdownSoundEnabled')
@@ -25,7 +28,8 @@ export function loadSettings(): Settings {
           ? legacyCountdownSound === 'true'
           : legacySoundEnabled === 'true' || legacyCountdown === 'true',
     halfwayChimeEnabled: localStorage.getItem(STORAGE_KEYS.halfwayChimeEnabled) === 'true',
-    autoAdvanceEnabled: localStorage.getItem(STORAGE_KEYS.autoAdvanceEnabled) === 'true',
+    keepScreenAwake: storedKeepScreenAwake !== null ? storedKeepScreenAwake === 'true' : true,
+    autoAdvanceEnabled: storedAutoAdvance !== null ? storedAutoAdvance === 'true' : true,
   }
 }
 
@@ -36,6 +40,7 @@ export function saveSettings(settings: Settings): void {
   localStorage.setItem(STORAGE_KEYS.speechEnabled, String(settings.speechEnabled))
   localStorage.setItem(STORAGE_KEYS.timerSoundEnabled, String(settings.timerSoundEnabled))
   localStorage.setItem(STORAGE_KEYS.halfwayChimeEnabled, String(settings.halfwayChimeEnabled))
+  localStorage.setItem(STORAGE_KEYS.keepScreenAwake, String(settings.keepScreenAwake))
   localStorage.setItem(STORAGE_KEYS.autoAdvanceEnabled, String(settings.autoAdvanceEnabled))
 }
 

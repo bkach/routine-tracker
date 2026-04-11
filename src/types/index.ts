@@ -65,6 +65,7 @@ export interface Settings {
   speechEnabled: boolean
   timerSoundEnabled: boolean
   halfwayChimeEnabled: boolean
+  keepScreenAwake: boolean
   autoAdvanceEnabled: boolean
 }
 

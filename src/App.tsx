@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { useRoutineStore } from './store/routineStore'
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts'
 import { useSpeech } from './hooks/useSpeech'
+import { useWakeLock } from './hooks/useWakeLock'
 import { ExerciseCard } from './components/ExerciseCard'
 import { Controls } from './components/Controls'
 import { ProgressBar } from './components/ProgressBar'
@@ -31,6 +32,8 @@ function App() {
     hideInfo,
   } = useRoutineStore()
   const { speak, cancel } = useSpeech()
+  const shouldKeepScreenAwake = settings.keepScreenAwake && timerStarted && !isPaused && currentIndex < exercises.length
+  useWakeLock(shouldKeepScreenAwake)
 
   // Initialize keyboard shortcuts
   useKeyboardShortcuts()

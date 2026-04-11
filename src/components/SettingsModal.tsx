@@ -93,6 +93,23 @@ export function SettingsModal() {
             <label className="setting-label">
               <input
                 type="checkbox"
+                id="keepScreenAwakeCheckbox"
+                className="setting-checkbox"
+                checked={settings.keepScreenAwake}
+                onChange={(e) =>
+                  updateSettings({ keepScreenAwake: e.target.checked })
+                }
+              />
+              <span className="setting-text">
+                <strong>Keep screen awake</strong>
+                <small>Prevent the screen from dimming while a timed exercise is running</small>
+              </span>
+            </label>
+          </div>
+          <div className="setting-item">
+            <label className="setting-label">
+              <input
+                type="checkbox"
                 id="autoAdvanceEnabledCheckbox"
                 className="setting-checkbox"
                 checked={settings.autoAdvanceEnabled}
