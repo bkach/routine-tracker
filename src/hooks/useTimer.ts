@@ -5,7 +5,7 @@ import { END_COUNTDOWN_FREQUENCIES } from '../utils/sound'
 
 /**
  * Custom hook to manage timer functionality
- * Handles the interval, countdown, and completion sounds
+ * Handles the interval, warning beeps, and completion sounds
  */
 export function useTimer() {
   const {
@@ -59,7 +59,7 @@ export function useTimer() {
 
   // Play 3-2-1 warning tones at the end of the timer.
   useEffect(() => {
-    if (!settings.soundEnabled || isPaused || !settings.endCountdownEnabled) return
+    if (!settings.timerSoundEnabled || isPaused) return
 
     // Reuse the former pre-start countdown tones for the end-of-timer warning.
     if (remainingSeconds === 3) {
@@ -69,7 +69,7 @@ export function useTimer() {
     } else if (remainingSeconds === 1) {
       playBeep(END_COUNTDOWN_FREQUENCIES[2], 0.15)
     }
-  }, [remainingSeconds, settings.soundEnabled, settings.endCountdownEnabled, isPaused, playBeep])
+  }, [remainingSeconds, settings.timerSoundEnabled, isPaused, playBeep])
 
   // Completion sound and auto-advance
   useEffect(() => {
@@ -80,7 +80,7 @@ export function useTimer() {
       duration > 0
 
     if (justCompleted) {
-      if (settings.soundEnabled) {
+      if (settings.timerSoundEnabled) {
         playCompletionSound()
       }
 
@@ -108,7 +108,7 @@ export function useTimer() {
     elapsedSeconds,
     duration,
     currentIndex,
-    settings.soundEnabled,
+    settings.timerSoundEnabled,
     settings.autoAdvanceEnabled,
     playCompletionSound,
     nextExercise,

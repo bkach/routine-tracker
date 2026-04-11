@@ -37,8 +37,8 @@ describe('useTimer auto-advance', () => {
       isPaused: false,
       timerStarted: true,
       settings: {
-        soundEnabled: true,
-        endCountdownEnabled: true,
+        speechEnabled: false,
+        timerSoundEnabled: true,
         autoAdvanceEnabled: true,
       },
     })

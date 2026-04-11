@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useRoutineStore } from './store/routineStore'
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts'
+import { useSpeech } from './hooks/useSpeech'
 import { ExerciseCard } from './components/ExerciseCard'
 import { Controls } from './components/Controls'
 import { ProgressBar } from './components/ProgressBar'
@@ -16,6 +17,9 @@ function App() {
     config,
     exercises,
     currentIndex,
+    settings,
+    isPaused,
+    timerStarted,
     isLoading,
     error,
     loadRoutineLibrary,
@@ -26,6 +30,7 @@ function App() {
     hideConfirm,
     hideInfo,
   } = useRoutineStore()
+  const { speak, cancel } = useSpeech()
 
   // Initialize keyboard shortcuts
   useKeyboardShortcuts()
@@ -33,6 +38,22 @@ function App() {
   useEffect(() => {
     loadRoutineLibrary()
   }, [loadRoutineLibrary])
+
+  useEffect(() => {
+    const currentExercise = exercises[currentIndex]
+
+    if (!settings.speechEnabled || !currentExercise || currentExercise.type !== 'timed') {
+      cancel()
+      return
+    }
+
+    const timerIsRunning = timerStarted && !isPaused
+    if (!timerIsRunning) {
+      return
+    }
+
+    speak(currentExercise.name)
+  }, [currentIndex, exercises, settings.speechEnabled, timerStarted, isPaused, speak, cancel])
 
   if (isLoading) {
     return (

@@ -8,7 +8,7 @@ import { END_COUNTDOWN_FREQUENCIES } from '../utils/sound'
  */
 export function useAudio() {
   const audioContextRef = useRef<AudioContext | null>(null)
-  const { settings } = useRoutineStore()
+  const timerSoundEnabled = useRoutineStore((state) => state.settings.timerSoundEnabled)
 
   const getAudioContext = useCallback(() => {
     if (!audioContextRef.current) {
@@ -36,12 +36,12 @@ export function useAudio() {
   }, [getAudioContext])
 
   const playBeep = useCallback((frequency: number = 800, duration: number = 0.15) => {
-    if (!settings.soundEnabled) return
+    if (!timerSoundEnabled) return
     playTone(frequency, duration)
-  }, [settings.soundEnabled, playTone])
+  }, [timerSoundEnabled, playTone])
 
   const playCompletionSound = useCallback(() => {
-    if (!settings.soundEnabled) return
+    if (!timerSoundEnabled) return
     const audioContext = getAudioContext()
     const startTime = audioContext.currentTime
 
@@ -55,7 +55,7 @@ export function useAudio() {
       oscillator.frequency.value = freq
       oscillator.type = 'sine'
 
-      const noteStart = startTime + (index * 0.06) // 60ms between notes (matching original)
+      const noteStart = startTime + (index * 0.06)
       const noteDuration = 0.3
 
       gainNode.gain.setValueAtTime(0.3, noteStart)
@@ -64,47 +64,36 @@ export function useAudio() {
       oscillator.start(noteStart)
       oscillator.stop(noteStart + noteDuration)
     })
-  }, [settings.soundEnabled, getAudioContext])
+  }, [timerSoundEnabled, getAudioContext])
 
   const playRoutineComplete = useCallback(() => {
-    if (!settings.soundEnabled) return
     const audioContext = getAudioContext()
 
-    // Dynamic completion jingle from original HTML
-    // Extended C major pentatonic across 2 octaves for variety
     const pentatonicScale = [
-      261.63, 293.66, 329.63, 392.00, 440.00,  // C4, D4, E4, G4, A4
-      523.25, 587.33, 659.25, 783.99, 880.00,  // C5, D5, E5, G5, A5
-      1046.50, 1174.66                          // C6, D6
+      261.63, 293.66, 329.63, 392.00, 440.00,
+      523.25, 587.33, 659.25, 783.99, 880.00,
+      1046.50, 1174.66,
     ]
 
-    const numEvents = 5 + Math.floor(Math.random() * 4) // 5-8 musical events
+    const numEvents = 5 + Math.floor(Math.random() * 4)
     let currentTime = audioContext.currentTime
 
     for (let i = 0; i < numEvents; i++) {
-      // Randomly decide if this is a single note or chord (30% chance of chord)
-      const isChord = Math.random() < 0.3 && i > 0 // No chord on first note
+      const isChord = Math.random() < 0.3 && i > 0
       const numNotes = isChord ? (Math.random() < 0.5 ? 2 : 3) : 1
-
-      // Random note duration: short (0.15s), medium (0.3s), or long (0.5s)
       const durationChoices = [0.15, 0.3, 0.5]
       const noteDuration = durationChoices[Math.floor(Math.random() * durationChoices.length)]
-
-      // Last note should be long and resolve to C
       const isLastEvent = i === numEvents - 1
 
       for (let n = 0; n < numNotes; n++) {
         let noteIndex
 
         if (isLastEvent && n === 0) {
-          // End on high C for resolution
-          noteIndex = 10 // C6
+          noteIndex = 10
         } else if (isChord) {
-          // For chords, use intervals that sound good (thirds and fifths)
-          noteIndex = 5 + (n * 2) // Create pleasant intervals
+          noteIndex = 5 + (n * 2)
         } else {
-          // Random note with bias toward middle-high range
-          noteIndex = 4 + Math.floor(Math.random() * 6) // Favor C5-C6 range
+          noteIndex = 4 + Math.floor(Math.random() * 6)
         }
 
         const freq = pentatonicScale[Math.min(noteIndex, pentatonicScale.length - 1)]
@@ -117,7 +106,6 @@ export function useAudio() {
         oscillator.frequency.value = freq
         oscillator.type = 'sine'
 
-        // Louder for final note
         const volume = isLastEvent ? 0.35 : 0.2 + Math.random() * 0.1
 
         gainNode.gain.setValueAtTime(0, currentTime)
@@ -128,13 +116,12 @@ export function useAudio() {
         oscillator.stop(currentTime + noteDuration)
       }
 
-      // Varied spacing: short (0.08s), medium (0.15s), or long (0.25s)
       const spacingChoices = [0.08, 0.15, 0.25]
       const spacing = spacingChoices[Math.floor(Math.random() * spacingChoices.length)]
 
       currentTime += noteDuration + spacing
     }
-  }, [settings.soundEnabled, getAudioContext])
+  }, [getAudioContext])
 
   return {
     playBeep,

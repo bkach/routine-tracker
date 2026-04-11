@@ -62,8 +62,8 @@ export interface RoutineLibrary {
 
 // Settings
 export interface Settings {
-  soundEnabled: boolean
-  endCountdownEnabled: boolean
+  speechEnabled: boolean
+  timerSoundEnabled: boolean
   autoAdvanceEnabled: boolean
 }
 

@@ -40,16 +40,16 @@ export function SettingsModal() {
             <label className="setting-label">
               <input
                 type="checkbox"
-                id="soundEnabledCheckbox"
+                id="timerSoundEnabledCheckbox"
                 className="setting-checkbox"
-                checked={settings.soundEnabled}
+                checked={settings.timerSoundEnabled}
                 onChange={(e) =>
-                  updateSettings({ soundEnabled: e.target.checked })
+                  updateSettings({ timerSoundEnabled: e.target.checked })
                 }
               />
               <span className="setting-text">
-                <strong>Enable sound</strong>
-                <small>Play beeps during the end countdown and completion chimes</small>
+                <strong>Play timer sounds</strong>
+                <small>Play short beeps for 3, 2, 1 and a completion sound at 0</small>
               </span>
             </label>
           </div>
@@ -57,16 +57,16 @@ export function SettingsModal() {
             <label className="setting-label">
               <input
                 type="checkbox"
-                id="countdownEnabledCheckbox"
+                id="speechEnabledCheckbox"
                 className="setting-checkbox"
-                checked={settings.endCountdownEnabled}
+                checked={settings.speechEnabled}
                 onChange={(e) =>
-                  updateSettings({ endCountdownEnabled: e.target.checked })
+                  updateSettings({ speechEnabled: e.target.checked })
                 }
               />
               <span className="setting-text">
-                <strong>Countdown at end of timers</strong>
-                <small>Show a 3-2-1 countdown during the final three seconds</small>
+                <strong>Read exercise names aloud</strong>
+                <small>Speak the current exercise name when a timed exercise starts</small>
               </span>
             </label>
           </div>

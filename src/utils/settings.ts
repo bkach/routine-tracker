@@ -1,8 +1,8 @@
 import type { Settings } from '../types'
 
 const STORAGE_KEYS = {
-  soundEnabled: 'soundEnabled',
-  endCountdownEnabled: 'endCountdownEnabled',
+  speechEnabled: 'speechEnabled',
+  timerSoundEnabled: 'timerSoundEnabled',
   autoAdvanceEnabled: 'autoAdvanceEnabled',
 } as const
 
@@ -10,12 +10,19 @@ const STORAGE_KEYS = {
  * Load settings from localStorage
  */
 export function loadSettings(): Settings {
-  const storedEndCountdown = localStorage.getItem(STORAGE_KEYS.endCountdownEnabled)
+  const storedTimerSound = localStorage.getItem(STORAGE_KEYS.timerSoundEnabled)
   const legacyCountdown = localStorage.getItem('countdownEnabled')
+  const legacySoundEnabled = localStorage.getItem('soundEnabled')
+  const legacyCountdownSound = localStorage.getItem('countdownSoundEnabled')
 
   return {
-    soundEnabled: localStorage.getItem(STORAGE_KEYS.soundEnabled) === 'true',
-    endCountdownEnabled: storedEndCountdown !== null ? storedEndCountdown === 'true' : legacyCountdown === 'true',
+    speechEnabled: localStorage.getItem(STORAGE_KEYS.speechEnabled) === 'true',
+    timerSoundEnabled:
+      storedTimerSound !== null
+        ? storedTimerSound === 'true'
+        : legacyCountdownSound !== null
+          ? legacyCountdownSound === 'true'
+          : legacySoundEnabled === 'true' || legacyCountdown === 'true',
     autoAdvanceEnabled: localStorage.getItem(STORAGE_KEYS.autoAdvanceEnabled) === 'true',
   }
 }
@@ -24,8 +31,8 @@ export function loadSettings(): Settings {
  * Save settings to localStorage
  */
 export function saveSettings(settings: Settings): void {
-  localStorage.setItem(STORAGE_KEYS.soundEnabled, String(settings.soundEnabled))
-  localStorage.setItem(STORAGE_KEYS.endCountdownEnabled, String(settings.endCountdownEnabled))
+  localStorage.setItem(STORAGE_KEYS.speechEnabled, String(settings.speechEnabled))
+  localStorage.setItem(STORAGE_KEYS.timerSoundEnabled, String(settings.timerSoundEnabled))
   localStorage.setItem(STORAGE_KEYS.autoAdvanceEnabled, String(settings.autoAdvanceEnabled))
 }
 

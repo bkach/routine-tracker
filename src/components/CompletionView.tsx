@@ -1,6 +1,6 @@
-import { useEffect } from 'react'
 import { useRoutineStore } from '../store/routineStore'
 import { useAudio } from '../hooks/useAudio'
+import { useEffect } from 'react'
 
 export function CompletionView() {
   const { loadConfig } = useRoutineStore()
