@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test": "vitest run"
+    "test": "vitest run",
+    "chrome:debug": "bash ./scripts/launch-chrome-debug.sh"
   },
   "dependencies": {
     "js-yaml": "^4.1.0",

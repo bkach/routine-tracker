@@ -11,6 +11,34 @@ npm install
 npm run dev
 ```
 
+## Chrome DevTools MCP
+
+This repo includes a local `.mcp.json` that registers `chrome-devtools-mcp` against a Chrome instance on `http://127.0.0.1:9222`.
+
+Start the app:
+
+```bash
+npm run dev
+```
+
+In a second terminal, launch Chrome in remote-debug mode with an isolated profile:
+
+```bash
+npm run chrome:debug
+```
+
+To open a different URL, pass it directly to the script:
+
+```bash
+bash ./scripts/launch-chrome-debug.sh http://127.0.0.1:4173
+```
+
+Notes:
+- The launcher uses `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome` by default.
+- Override the binary with `CHROME_BIN=/path/to/chrome`.
+- The debug profile is stored in `/tmp/routine-tracker-chrome-debug` by default.
+- The DevTools target list is available at `http://127.0.0.1:9222/json/list`.
+
 ## Deployment
 
 ### Frontend (GitHub Pages)

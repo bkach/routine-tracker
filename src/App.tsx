@@ -12,6 +12,7 @@ import { EditorModal } from './components/EditorModal'
 import { CompletionView } from './components/CompletionView'
 import { ConfirmModal } from './components/ConfirmModal'
 import { InfoModal } from './components/InfoModal'
+import { getSpeechText } from './utils/exercises'
 
 function App() {
   const {
@@ -56,7 +57,7 @@ function App() {
       return
     }
 
-    speak(currentExercise.name)
+    speak(getSpeechText(currentExercise))
   }, [currentIndex, exercises, settings.speechEnabled, timerStarted, isPaused, speak, cancel])
 
   if (isLoading) {

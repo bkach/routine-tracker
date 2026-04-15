@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { getSetInfo } from './exercises'
+import { getSetInfo, getSpeechText } from './exercises'
 import type { ExpandedExercise } from '../types'
 
 describe('getSetInfo', () => {
@@ -25,5 +25,43 @@ describe('getSetInfo', () => {
     }
 
     expect(getSetInfo(exercise)).toBe('')
+  })
+})
+
+describe('getSpeechText', () => {
+  it('includes duration details for timed exercises without set info', () => {
+    const exercise: ExpandedExercise = {
+      section: 'Warm Up',
+      name: 'High Knees',
+      type: 'timed',
+      setNumber: 2,
+      totalSets: 3,
+      duration: 45,
+    }
+
+    expect(getSpeechText(exercise)).toBe('High Knees. 45 seconds.')
+  })
+
+  it('includes set count and reps for combined reps exercises', () => {
+    const exercise: ExpandedExercise = {
+      section: 'Strength',
+      name: 'Push-ups',
+      type: 'reps',
+      totalSets: 3,
+      reps: '10 reps',
+    }
+
+    expect(getSpeechText(exercise)).toBe('Push-ups. 3 sets. 10 reps.')
+  })
+
+  it('formats mixed minute and second durations naturally', () => {
+    const exercise: ExpandedExercise = {
+      section: 'Core',
+      name: 'Plank',
+      type: 'timed',
+      duration: 90,
+    }
+
+    expect(getSpeechText(exercise)).toBe('Plank. 1 minute 30 seconds.')
   })
 })

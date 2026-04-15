@@ -127,6 +127,47 @@ export function getSetInfo(exercise: ExpandedExercise): string {
   return ''
 }
 
+function formatDurationForSpeech(seconds: number): string {
+  const minutes = Math.floor(seconds / 60)
+  const remainingSeconds = seconds % 60
+
+  if (minutes > 0 && remainingSeconds > 0) {
+    return `${minutes} minute${minutes === 1 ? '' : 's'} ${remainingSeconds} second${remainingSeconds === 1 ? '' : 's'}`
+  }
+
+  if (minutes > 0) {
+    return `${minutes} minute${minutes === 1 ? '' : 's'}`
+  }
+
+  return `${remainingSeconds} second${remainingSeconds === 1 ? '' : 's'}`
+}
+
+export function getSpeechText(exercise: ExpandedExercise): string {
+  if (exercise.isRest) {
+    return exercise.duration ? `${exercise.name}. ${formatDurationForSpeech(exercise.duration)}.` : exercise.name
+  }
+
+  const parts = [exercise.name]
+
+  if (exercise.type === 'timed' && exercise.duration) {
+    parts.push(formatDurationForSpeech(exercise.duration))
+    return `${parts.join('. ')}.`
+  }
+
+  if (exercise.type === 'reps' && exercise.reps) {
+    if (exercise.setNumber && exercise.totalSets) {
+      parts.push(`set ${exercise.setNumber} of ${exercise.totalSets}`)
+    } else if (exercise.totalSets && exercise.totalSets > 1) {
+      parts.push(`${exercise.totalSets} sets`)
+    }
+
+    parts.push(exercise.reps)
+    return `${parts.join('. ')}.`
+  }
+
+  return exercise.name
+}
+
 /**
  * Calculate total routine duration in seconds
  */
